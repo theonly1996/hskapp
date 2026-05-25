@@ -1,0 +1,86 @@
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+}
+
+/* Ẩn thanh cuộn nhưng vẫn cho phép cuộn */
+.hide-scrollbar::-webkit-scrollbar { 
+    display: none; 
+}
+.hide-scrollbar { 
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
+}
+
+/* ==================================================== */
+/* Hiệu ứng xoay thẻ Flashcard 3D */
+/* ==================================================== */
+.perspective-1000 { 
+    perspective: 1000px; 
+}
+.transform-style-preserve-3d { 
+    transform-style: preserve-3d; 
+}
+.backface-hidden { 
+    backface-visibility: hidden; 
+}
+.rotate-y-180 { 
+    transform: rotateY(180deg); 
+}
+.animate-fade-in { 
+    animation: fadeIn 0.3s ease-out; 
+}
+
+@keyframes fadeIn { 
+    from { 
+        opacity: 0; 
+        transform: translateY(12px); 
+    } 
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    } 
+}
+
+/* ==================================================== */
+/* Hoạt ảnh sóng âm đang ghi âm micro (Chức năng phát âm AI) */
+/* ==================================================== */
+.recording-pulse {
+    animation: recordPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes recordPulse {
+    0% { 
+        transform: scale(1); 
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); 
+    }
+    70% { 
+        transform: scale(1.1); 
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); 
+    }
+    100% { 
+        transform: scale(1); 
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); 
+    }
+}
+
+/* ==================================================== */
+/* Hoạt ảnh thanh sóng âm micro động (Lúc đang nghe) */
+/* ==================================================== */
+.wave-bar {
+    display: inline-block;
+    width: 3px;
+    height: 12px;
+    background-color: #ef4444;
+    border-radius: 2px;
+    animation: bounceWave 0.8s infinite ease-in-out;
+}
+
+.wave-bar:nth-child(2) { animation-delay: 0.15s; height: 18px; }
+.wave-bar:nth-child(3) { animation-delay: 0.3s; height: 14px; }
+.wave-bar:nth-child(4) { animation-delay: 0.45s; height: 20px; }
+.wave-bar:nth-child(5) { animation-delay: 0.6s; height: 10px; }
+
+@keyframes bounceWave {
+    0%, 100% { transform: scaleY(0.5); }
+    50% { transform: scaleY(1.5); }
+}

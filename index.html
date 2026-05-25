@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sổ Tay HSK Pro - Phiên Bản Modular</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' };
+    </script>
+
+    <!-- Style CSS của bạn -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- CÁC THƯ VIỆN ĐÃ ĐƯỢC SỬA LỖI ĐƯỜNG DẪN 100% -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js" crossorigin></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
+
+    <!-- Font Awesome & Hanzi Writer -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300">
+
+    <div id="root"></div>
+
+    <!-- 1. JS Thuần -->
+    <script src="js/data.js"></script>
+    <script src="js/utils.js"></script>
+
+    <!-- 2. Components -->
+    <script type="text/babel" src="js/components/Hanzicharacter.js"></script>
+    <script type="text/babel" src="js/components/LoadingScreen.js"></script>
+    <script type="text/babel" src="js/components/Toast.js"></script>
+    <script type="text/babel" src="js/components/WordCard.js"></script>
+
+    <!-- 3. Tabs -->
+    <script type="text/babel" src="js/tabs/OverviewTab.js"></script>
+    <script type="text/babel" src="js/tabs/CurriculumTab.js"></script>
+    <script type="text/babel" src="js/tabs/DictionaryTab.js"></script>
+    <script type="text/babel" src="js/tabs/GrammarTab.js"></script>
+    <script type="text/babel" src="js/tabs/FlashcardTab.js"></script>
+    <script type="text/babel" src="js/tabs/QuizTab.js"></script>
+    <script type="text/babel" src="js/tabs/BookmarksTab.js"></script>
+
+    <!-- 4. Main App -->
+    <script type="text/babel" src="js/App.js"></script>
+
+</body>
+</html>
