@@ -10,6 +10,25 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
 
     const cleanWords = useMemoFlashcard(() => words.filter(w => w.id !== 'error'), [words]);
 
+    // Thêm useEffect này vào ngay dưới các useEffect khác trong FlashcardTab
+    useEffectFlashcard(() => {
+        const handleKeyDown = (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault(); // Tránh bị cuộn trang khi bấm Space
+                handleFlip();
+            } else if (e.code === 'ArrowRight') {
+                handleNext();
+            } else if (e.code === 'ArrowLeft') {
+                handlePrev();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        
+        // Dọn dẹp sự kiện khi rời khỏi tab Flashcard
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isFlipped, cleanWords, currentIndex]); // Dependencies cần thiết
+    
     useEffectFlashcard(() => {
         setCurrentIndex(0);
         setIsFlipped(false);
