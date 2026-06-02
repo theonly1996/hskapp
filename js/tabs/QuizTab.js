@@ -1,9 +1,14 @@
 // =========================================================================
-// TAB: TRẮC NGHIỆM TỔNG HỢP (Quiz Tab)
+// TAB: TRẮC NGHIỆM TỔNG HỢP & LUYỆN DỊCH 15 BÀI HSK 1 (Quiz Tab)
 // =========================================================================
 const { useState: useStateQuiz, useEffect: useEffectQuiz } = React;
 
 const QuizTab = ({ words, loading }) => {
+    // Phân chia phân hệ chính: 'vocab' (Trắc nghiệm từ vựng) hoặc 'translation' (Vở bài tập luyện dịch)
+    const [activeSection, setActiveSection] = useStateQuiz('vocab');
+    const [selectedLessonId, setSelectedLessonId] = useStateQuiz(null);
+    const [translationLessonsProgress, setTranslationLessonsProgress] = useStateQuiz([]);
+
     const [isStarted, setIsStarted] = useStateQuiz(false);
     const [quizMode, setQuizMode] = useStateQuiz('meaning'); 
     const [questions, setQuestions] = useStateQuiz([]);
@@ -18,6 +23,119 @@ const QuizTab = ({ words, loading }) => {
     const [userInputChar, setUserInputChar] = useStateQuiz("");
     const [showHint, setShowHint] = useStateQuiz(false);
 
+    // Load tiến độ luyện dịch từ LocalStorage để hiển thị điểm số trên danh sách bài
+    useEffectQuiz(() => {
+        const savedProgress = localStorage.getItem('hskpro_translation_progress_v1');
+        if (savedProgress) {
+            setTranslationLessonsProgress(JSON.parse(savedProgress));
+        } else {
+            const defaultList = window.hskProData?.defaultProgress || [];
+            setTranslationLessonsProgress(defaultList);
+        }
+    }, [isStarted, showResult, activeSection]);
+
+    // Lắng nghe tín hiệu chuyển bài học từ Dashboard để tự kích hoạt bài test dịch
+    useEffectQuiz(() => {
+        const pendingLessonId = localStorage.getItem('hskpro_active_translation_lesson_id');
+        if (pendingLessonId) {
+            localStorage.removeItem('hskpro_active_translation_lesson_id');
+            setActiveSection('translation');
+            startTranslationQuiz(parseInt(pendingLessonId, 10));
+        }
+    }, [isStarted]);
+
+    // Hàm chuẩn hóa chuỗi tiếng Trung để so khớp đáp án dịch không bị lỗi do dấu câu hoặc khoảng trắng
+    const normalizeChineseStr = (str) => {
+        if (!str) return '';
+        return str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"'，。！？；：（）“”‘’\s]/g, "");
+    };
+
+    // Khởi động bài kiểm tra Luyện Dịch HSK 1
+    const startTranslationQuiz = (lessonId) => {
+        const lesson = window.hskProData?.lessons?.find(l => l.lessonId === lessonId);
+        if (!lesson || !lesson.questions || lesson.questions.length === 0) return;
+
+        setQuizMode('translation');
+        setSelectedLessonId(lessonId);
+
+        // Map bộ câu hỏi luyện dịch của bài học
+        const generatedQuestions = lesson.questions.map(q => ({
+            id: q.id,
+            word: q.chinese,     // Chữ Hán đáp án đúng
+            pinyin: q.pinyin,     // Pinyin đáp án đúng
+            meaning: q.vietnamese, // Câu hỏi tiếng Việt
+            type: 'translation'
+        }));
+
+        setQuestions(generatedQuestions);
+        setCurrentIndex(0);
+        setScore(0);
+        setShowResult(false);
+        setSelectedAnswer(null);
+        setUserInputChar("");
+        setShowHint(false);
+        setIsStarted(true);
+    };
+
+    // Hàm lưu điểm luyện dịch tự động đồng bộ xuống LocalStorage của OverviewTab
+    const saveTranslationScore = (lessonId, finalScore) => {
+        const saved = localStorage.getItem('hskpro_translation_progress_v1');
+        let progressList = saved ? JSON.parse(saved) : (window.hskProData?.defaultProgress || []);
+        
+        let updated = false;
+        progressList = progressList.map(item => {
+            if (item.lessonId === lessonId) {
+                updated = true;
+                return {
+                    ...item,
+                    isCompleted: true,
+                    currentScore: finalScore > item.currentScore ? finalScore : item.currentScore
+                };
+            }
+            return item;
+        });
+
+        if (!updated) {
+            progressList.push({ lessonId, title: `Bài ${lessonId}`, isCompleted: true, currentScore: finalScore });
+        }
+
+        localStorage.setItem('hskpro_translation_progress_v1', JSON.stringify(progressList));
+    };
+
+    // Xử lý nộp bài Luyện Dịch câu hỏi tiếng Việt sang tiếng Trung
+    const handleCheckTranslation = (e) => {
+        if (e) e.preventDefault();
+        if (selectedAnswer) return;
+
+        const userInput = normalizeChineseStr(userInputChar);
+        const correctAnswer = normalizeChineseStr(questions[currentIndex].word);
+
+        let isCorrect = userInput === correctAnswer;
+        const newScore = isCorrect ? score + 1 : score;
+
+        if (isCorrect) {
+            setSelectedAnswer('correct');
+            if (typeof playSoundFeedback === 'function') playSoundFeedback('correct');
+            setScore(newScore);
+        } else {
+            setSelectedAnswer('wrong');
+            if (typeof playSoundFeedback === 'function') playSoundFeedback('wrong');
+        }
+
+        setTimeout(() => {
+            if (currentIndex + 1 < questions.length) {
+                setSelectedAnswer(null);
+                setUserInputChar("");
+                setShowHint(false);
+                setCurrentIndex(prev => prev + 1);
+            } else {
+                saveTranslationScore(selectedLessonId, newScore);
+                setShowResult(true);
+            }
+        }, 3200); // Đợi 3.2s giúp học viên ghi nhớ Chữ Hán & Pinyin đáp án đúng hiện trên màn hình
+    };
+
+    // Bắt đầu làm trắc nghiệm từ vựng (Hàm gốc của bạn)
     const startQuiz = (mode) => {
         const cleanWords = words.filter(w => w.id !== 'error');
         if (cleanWords.length < 4) return;
@@ -63,7 +181,7 @@ const QuizTab = ({ words, loading }) => {
                 return {
                     ...targetWord,
                     type: 'listen_pinyin',
-                    answer: removePinyinTones(targetWord.pinyin).replace(/\s+/g, '') // Bỏ dấu và khoảng trắng để dễ check
+                    answer: removePinyinTones(targetWord.pinyin).replace(/\s+/g, '')
                 };
             } else {
                 const optKey = mode === 'listening' ? 'word' : mode;
@@ -131,7 +249,7 @@ const QuizTab = ({ words, loading }) => {
         let actualAnswer = questions[currentIndex].answer.trim().toLowerCase();
 
         if (quizMode === 'listen_pinyin') {
-            normalizedInput = normalizedInput.replace(/\s+/g, ''); // Xóa khoảng trắng do người dùng nhập để check linh hoạt
+            normalizedInput = normalizedInput.replace(/\s+/g, '');
         }
 
         if (normalizedInput === actualAnswer) {
@@ -178,51 +296,141 @@ const QuizTab = ({ words, loading }) => {
 
     const cleanWords = words.filter(w => w.id !== 'error');
     if (loading) return <LoadingScreen message="Đang khởi tạo bài kiểm tra..." />;
-    if (cleanWords.length < 4) return (
-        <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 animate-fade-in">
-            <p className="text-slate-500 dark:text-slate-400 font-bold mb-2">Cần ít nhất 4 từ vựng trong danh sách này để kích hoạt Trắc Nghiệm.</p>
-        </div>
-    );
 
+    // NẾU CHƯA BẮT ĐẦU QUIZ: HIỂN THỊ MENU CHỌN CHẾ ĐỘ
     if (!isStarted) {
         return (
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-8 text-center animate-fade-in max-w-lg mx-auto">
-                <div className="w-16 h-16 bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-5">
-                    <i className="fas fa-feather-alt animate-pulse"></i>
-                </div>
-                <h2 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white mb-2">Phòng Luyện Thi HSK</h2>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mb-6">Chọn hình thức ôn tập phù hợp với mục tiêu của bạn:</p>
-                
-                <div className="flex flex-col gap-3">
-                    <button onClick={() => startQuiz('meaning')} className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:border-teal-500 dark:hover:border-teal-500 hover:text-teal-600 dark:hover:text-teal-400 font-bold text-xs md:text-sm text-left transition-all flex items-center justify-between group">
-                        <span className="flex items-center gap-3"><i className="fas fa-language text-base text-teal-500"></i> Đọc hiểu (Nhìn Hán chọn Nghĩa)</span>
-                        <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+            <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+                {/* THANH CHUYỂN PHÂN HỆ: TRẮC NGHIỆM TỪ VỰNG VS LUYỆN DỊCH SÁCH */}
+                <div className="flex p-1 bg-slate-100 dark:bg-slate-950 rounded-2xl max-w-md mx-auto border border-slate-200/50 dark:border-slate-800/50">
+                    <button 
+                        onClick={() => setActiveSection('vocab')}
+                        className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition duration-200 ${
+                            activeSection === 'vocab' 
+                                ? 'bg-white dark:bg-slate-800 text-teal-600 dark:text-teal-400 shadow-sm' 
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                        }`}
+                    >
+                        ⚡ Luyện Thi HSK
                     </button>
-                    <button onClick={() => startQuiz('pinyin')} className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:border-indigo-500 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold text-xs md:text-sm text-left transition-all flex items-center justify-between group">
-                        <span className="flex items-center gap-3"><i className="fas fa-bullhorn text-base text-indigo-500"></i> Phát âm (Nhìn Hán chọn Pinyin)</span>
-                        <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                    </button>
-                    <button onClick={() => startQuiz('listening')} className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:border-amber-500 dark:hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400 font-bold text-xs md:text-sm text-left transition-all flex items-center justify-between group">
-                        <span className="flex items-center gap-3"><i className="fas fa-headphones text-base text-amber-500"></i> Luyện nghe (Nghe phát âm chọn Hán)</span>
-                        <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                    </button>
-                    <button onClick={() => startQuiz('reorder')} className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:border-purple-500 dark:hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 font-bold text-xs md:text-sm text-left transition-all flex items-center justify-between group">
-                        <span className="flex items-center gap-3"><i className="fas fa-puzzle-piece text-base text-purple-500"></i> Sắp xếp câu (Ghép chữ thành câu)</span>
-                        <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                    </button>
-                    <button onClick={() => startQuiz('writing')} className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:border-emerald-500 dark:hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 font-bold text-xs md:text-sm text-left transition-all flex items-center justify-between group">
-                        <span className="flex items-center gap-3"><i className="fas fa-keyboard text-base text-emerald-500"></i> Luyện gõ phím (Viết từ vựng chữ Hán)</span>
-                        <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                    </button>
-                    <button onClick={() => startQuiz('listen_pinyin')} className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:border-pink-500 dark:hover:border-pink-500 hover:text-pink-600 dark:hover:text-pink-400 font-bold text-xs md:text-sm text-left transition-all flex items-center justify-between group">
-                        <span className="flex items-center gap-3"><i className="fas fa-ear-listen text-base text-pink-500"></i> Nghe và viết Pinyin (Bỏ qua dấu)</span>
-                        <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    <button 
+                        onClick={() => setActiveSection('translation')}
+                        className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition duration-200 ${
+                            activeSection === 'translation' 
+                                ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-sm' 
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                        }`}
+                    >
+                        📝 Luyện Dịch HSK 1
                     </button>
                 </div>
+
+                {/* GIAO DIỆN PHÂN HỆ 1: TRẮC NGHIỆM TỪ VỰNG CHUẨN (CODE CŨ GIỮ NGUYÊN) */}
+                {activeSection === 'vocab' && (
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-8 text-center max-w-lg mx-auto">
+                        <div className="w-16 h-16 bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-5">
+                            <i className="fas fa-feather-alt animate-pulse"></i>
+                        </div>
+                        <h2 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white mb-2">Phòng Luyện Thi HSK</h2>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mb-6">Chọn hình thức ôn tập phù hợp với mục tiêu của bạn:</p>
+                        
+                        {cleanWords.length < 4 ? (
+                            <p className="text-sm font-bold text-amber-500">Cần ít nhất 4 từ vựng trong danh sách để kích hoạt Trắc Nghiệm.</p>
+                        ) : (
+                            <div className="flex flex-col gap-3">
+                                <button onClick={() => startQuiz('meaning')} className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:border-teal-500 dark:hover:border-teal-500 hover:text-teal-600 dark:hover:text-teal-400 font-bold text-xs md:text-sm text-left transition-all flex items-center justify-between group">
+                                    <span className="flex items-center gap-3"><i className="fas fa-language text-base text-teal-500"></i> Đọc hiểu (Nhìn Hán chọn Nghĩa)</span>
+                                    <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                </button>
+                                <button onClick={() => startQuiz('pinyin')} className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:border-indigo-500 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold text-xs md:text-sm text-left transition-all flex items-center justify-between group">
+                                    <span className="flex items-center gap-3"><i className="fas fa-bullhorn text-base text-indigo-500"></i> Phát âm (Nhìn Hán chọn Pinyin)</span>
+                                    <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                </button>
+                                <button onClick={() => startQuiz('listening')} className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:border-amber-500 dark:hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400 font-bold text-xs md:text-sm text-left transition-all flex items-center justify-between group">
+                                    <span className="flex items-center gap-3"><i className="fas fa-headphones text-base text-amber-500"></i> Luyện nghe (Nghe phát âm chọn Hán)</span>
+                                    <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                </button>
+                                <button onClick={() => startQuiz('reorder')} className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:border-purple-500 dark:hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 font-bold text-xs md:text-sm text-left transition-all flex items-center justify-between group">
+                                    <span className="flex items-center gap-3"><i className="fas fa-puzzle-piece text-base text-purple-500"></i> Sắp xếp câu (Ghép chữ thành câu)</span>
+                                    <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                </button>
+                                <button onClick={() => startQuiz('writing')} className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:border-emerald-500 dark:hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 font-bold text-xs md:text-sm text-left transition-all flex items-center justify-between group">
+                                    <span className="flex items-center gap-3"><i className="fas fa-keyboard text-base text-emerald-500"></i> Luyện gõ phím (Viết từ vựng chữ Hán)</span>
+                                    <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                </button>
+                                <button onClick={() => startQuiz('listen_pinyin')} className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:border-pink-500 dark:hover:border-pink-500 hover:text-pink-600 dark:hover:text-pink-400 font-bold text-xs md:text-sm text-left transition-all flex items-center justify-between group">
+                                    <span className="flex items-center gap-3"><i className="fas fa-ear-listen text-base text-pink-500"></i> Nghe và viết Pinyin (Bỏ qua dấu)</span>
+                                    <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* GIAO DIỆN PHÂN HỆ 2: VỞ BÀI TẬP LUYỆN DỊCH HSK 1 (TỪ FILE WORD) */}
+                {activeSection === 'translation' && (
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
+                        <div className="mb-6 text-center">
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center justify-center gap-2">
+                                📚 Vở Bài Tập Luyện Dịch HSK 1 (Chuẩn 15 Bài)
+                            </h3>
+                            <p className="text-xs text-slate-400 mt-1">Luyện phản xạ viết chữ Hán từ câu tiếng Việt tự nhiên</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {(window.hskProData?.lessons || []).map((lesson) => {
+                                const progInfo = translationLessonsProgress.find(p => p.lessonId === lesson.lessonId);
+                                const isDone = progInfo?.isCompleted || false;
+                                const maxSc = progInfo?.currentScore || 0;
+
+                                return (
+                                    <div 
+                                        key={lesson.lessonId} 
+                                        className={`p-4 rounded-2xl border transition duration-200 flex flex-col justify-between space-y-3 ${
+                                            isDone 
+                                                ? 'bg-emerald-50/20 border-emerald-200/70 dark:bg-emerald-950/10 dark:border-emerald-900/50' 
+                                                : 'bg-slate-50/50 border-slate-150 dark:bg-slate-950/20 dark:border-slate-800'
+                                        }`}
+                                    >
+                                        <div>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="text-[10px] font-extrabold uppercase text-slate-400">Bài HỌC {lesson.lessonId}</span>
+                                                {isDone && (
+                                                    <span className="text-[9px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 px-2 py-0.5 rounded-md font-bold">
+                                                        Đã làm
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <h4 className="font-bold text-xs text-slate-700 dark:text-slate-200 truncate" title={lesson.title}>
+                                                {lesson.title}
+                                            </h4>
+                                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 line-clamp-2 italic">
+                                                {lesson.grammar}
+                                            </p>
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-800/50">
+                                            <span className="text-xs font-black text-blue-600 dark:text-blue-400">
+                                                {maxSc} / 20 đ
+                                            </span>
+                                            <button 
+                                                onClick={() => startTranslationQuiz(lesson.lessonId)}
+                                                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] rounded-lg transition"
+                                            >
+                                                Bắt đầu dịch
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }
 
+    // GIAO DIỆN 2: MÀN HÌNH KẾT QUẢ SAU KHI LÀM XONG BÀI QUIZ
     if (showResult) {
         return (
             <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-8 text-center animate-fade-in max-w-md mx-auto">
@@ -235,11 +443,20 @@ const QuizTab = ({ words, loading }) => {
                     <div className="bg-emerald-500 h-full rounded-full transition-all duration-1000" style={{ width: `${(score/questions.length)*100}%` }}></div>
                 </div>
                 <div className="flex gap-3">
-                    <button onClick={() => startQuiz(quizMode)} className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors">
+                    <button 
+                        onClick={() => {
+                            if (quizMode === 'translation') {
+                                startTranslationQuiz(selectedLessonId);
+                            } else {
+                                startQuiz(quizMode);
+                            }
+                        }} 
+                        className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors"
+                    >
                         <i className="fas fa-redo mr-1.5"></i> Luyện lại
                     </button>
                     <button onClick={() => setIsStarted(false)} className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 font-bold text-xs rounded-xl shadow-sm transition-colors">
-                        Đổi chế độ
+                        Thoát bài
                     </button>
                 </div>
             </div>
@@ -261,7 +478,76 @@ const QuizTab = ({ words, loading }) => {
                 <span className="text-xs font-bold text-slate-400 dark:text-slate-500"><i className="fas fa-star text-amber-500 mr-1"></i> Điểm: {score}</span>
             </div>
 
-            {/* Giao diện: Gõ chữ Hán (Writing Quiz) */}
+            {/* GIAO DIỆN CHUYÊN DỤNG: LUYỆN DỊCH HSK 1 (TỪ FILE WORD) */}
+            {currentQ.type === 'translation' && (
+                <div className="text-center animate-fade-in space-y-5">
+                    <div>
+                        <p className="text-[10px] font-black tracking-wider text-slate-400 dark:text-slate-500 uppercase mb-1">Dịch câu này sang chữ Hán:</p>
+                        <div className="p-5 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-100 dark:border-slate-850 rounded-2xl">
+                            <h2 className="text-lg md:text-xl font-extrabold text-slate-800 dark:text-slate-200 leading-relaxed">
+                                {currentQ.meaning}
+                            </h2>
+                        </div>
+                    </div>
+
+                    <form onSubmit={handleCheckTranslation} className="max-w-md mx-auto flex gap-2 pt-2">
+                        <input 
+                            key={`input-translation-${currentIndex}`}
+                            type="text" 
+                            className="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-center text-xl placeholder-slate-300 dark:placeholder-slate-750"
+                            placeholder="Nhập chữ Hán..."
+                            value={userInputChar}
+                            onChange={(e) => setUserInputChar(e.target.value)}
+                            disabled={!!selectedAnswer}
+                            autoFocus
+                        />
+                        <button 
+                            type="submit"
+                            disabled={!userInputChar.trim() || !!selectedAnswer}
+                            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl disabled:opacity-50 transition shrink-0"
+                        >
+                            Nộp bài
+                        </button>
+                    </form>
+
+                    <div className="flex justify-center gap-2">
+                        <button 
+                            type="button" 
+                            onClick={() => setShowHint(!showHint)}
+                            className="text-xs text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1.5 hover:underline"
+                        >
+                            <i className="fas fa-question-circle"></i> {showHint ? "Ẩn gợi ý phát âm" : "Gợi ý Pinyin phát âm"}
+                        </button>
+                    </div>
+
+                    {showHint && (
+                        <p className="text-sm font-bold text-indigo-500 dark:text-indigo-400 bg-indigo-50/50 dark:bg-slate-950/40 py-2 px-4 rounded-xl inline-block animate-fade-in border border-indigo-100/50 dark:border-slate-800/45">
+                            🗣️ {currentQ.pinyin}
+                        </p>
+                    )}
+
+                    {selectedAnswer === 'correct' && (
+                        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl border border-emerald-200 text-emerald-700 dark:text-emerald-400 font-bold animate-fade-in text-xs leading-relaxed">
+                            <i className="fas fa-check-circle mr-1.5"></i> Tuyệt hảo! Dịch hoàn toàn chính xác.
+                        </div>
+                    )}
+                    {selectedAnswer === 'wrong' && (
+                        <div className="p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 rounded-2xl text-left animate-fade-in space-y-1">
+                            <p className="text-rose-700 dark:text-rose-400 font-bold text-xs">
+                                <i className="fas fa-times-circle mr-1.5"></i> Chưa chính xác! Xem đáp án chuẩn:
+                            </p>
+                            <p className="text-xl font-extrabold text-slate-800 dark:text-white pt-1">
+                                Chữ Hán: {currentQ.word}
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-indigo-400 font-semibold">
+                                Pinyin: {currentQ.pinyin}
+                            </p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* GIAO DIỆN: GÕ CHỮ HÁN (Writing Quiz) */}
             {currentQ.type === 'writing' && (
                 <div className="text-center animate-fade-in">
                     <div className="mb-6">
@@ -311,7 +597,7 @@ const QuizTab = ({ words, loading }) => {
                 </div>
             )}
 
-            {/* Giao diện: Nghe và viết Pinyin */}
+            {/* GIAO DIỆN: NGHE VÀ VIẾT PINYIN */}
             {currentQ.type === 'listen_pinyin' && (
                 <div className="text-center animate-fade-in">
                     <div className="mb-6">
@@ -351,7 +637,7 @@ const QuizTab = ({ words, loading }) => {
                 </div>
             )}
 
-            {/* Giao diện: Sắp xếp câu (Reorder Quiz) */}
+            {/* GIAO DIỆN: SẮP XẾP CÂU (Reorder Quiz) */}
             {currentQ.type === 'reorder' && (
                 <div className="text-center animate-fade-in">
                     <div className="mb-6">
@@ -403,7 +689,7 @@ const QuizTab = ({ words, loading }) => {
                 </div>
             )}
 
-            {/* Giao diện: Trắc nghiệm Multiple Choice */}
+            {/* GIAO DIỆN: TRẮC NGHIỆM MULTIPLE CHOICE (STANDARD QUIZ) */}
             {currentQ.type === 'standard' && (
                 <>
                     <div className="text-center mb-6">
@@ -473,3 +759,6 @@ const QuizTab = ({ words, loading }) => {
         </div>
     );
 };
+
+// Gán biến toàn cục để Index.html có thể truy cập qua React CDN
+window.QuizTab = QuizTab;
