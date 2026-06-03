@@ -1,13 +1,16 @@
 // =========================================================================
-// TAB: TRẮC NGHIỆM TỔNG HỢP & LUYỆN DỊCH 15 BÀI HSK 1 (Quiz Tab)
+// TAB: TRẮC NGHIỆM TỔNG HỢP & LUYỆN DỊCH HSK 1 - 3 (Quiz Tab)
 // =========================================================================
-const { useState: useStateQuiz, useEffect: useEffectQuiz } = React;
+const { useState: useStateQuiz, useEffect: useEffectQuiz, useMemo: useMemoQuiz } = React;
 
 const QuizTab = ({ words, loading }) => {
     // Phân chia phân hệ chính: 'vocab' (Trắc nghiệm từ vựng) hoặc 'translation' (Vở bài tập luyện dịch)
     const [activeSection, setActiveSection] = useStateQuiz('vocab');
     const [selectedLessonId, setSelectedLessonId] = useStateQuiz(null);
     const [translationLessonsProgress, setTranslationLessonsProgress] = useStateQuiz([]);
+    
+    // Bộ lọc cấp độ luyện dịch (Mặc định chọn HSK 1 để giao diện sạch sẽ, gọn gàng nhất)
+    const [selectedLevel, setSelectedLevel] = useStateQuiz('1');
 
     const [isStarted, setIsStarted] = useStateQuiz(false);
     const [quizMode, setQuizMode] = useStateQuiz('meaning'); 
@@ -27,7 +30,11 @@ const QuizTab = ({ words, loading }) => {
     useEffectQuiz(() => {
         const savedProgress = localStorage.getItem('hskpro_translation_progress_v1');
         if (savedProgress) {
-            setTranslationLessonsProgress(JSON.parse(savedProgress));
+            try {
+                setTranslationLessonsProgress(JSON.parse(savedProgress));
+            } catch (e) {
+                console.error("Lỗi parse JSON tiến trình dịch:", e);
+            }
         } else {
             const defaultList = window.hskProData?.defaultProgress || [];
             setTranslationLessonsProgress(defaultList);
@@ -40,9 +47,30 @@ const QuizTab = ({ words, loading }) => {
         if (pendingLessonId) {
             localStorage.removeItem('hskpro_active_translation_lesson_id');
             setActiveSection('translation');
-            startTranslationQuiz(parseInt(pendingLessonId, 10));
+            
+            // Tự động chuyển tab lọc tương ứng với bài học được click từ Dashboard
+            const lessonIdNum = parseInt(pendingLessonId, 10);
+            if (lessonIdNum >= 1 && lessonIdNum <= 15) {
+                setSelectedLevel('1');
+            } else if (lessonIdNum >= 16 && lessonIdNum <= 30) {
+                setSelectedLevel('2');
+            } else if (lessonIdNum >= 31) {
+                setSelectedLevel('3');
+            }
+            
+            startTranslationQuiz(lessonIdNum);
         }
     }, [isStarted]);
+
+    // Lọc danh sách bài học dựa trên cấp độ HSK được chọn
+    const filteredLessons = useMemoQuiz(() => {
+        const allLessons = window.hskProData?.lessons || [];
+        if (selectedLevel === 'all') return allLessons;
+        return allLessons.filter(lesson => {
+            const lvl = lesson.level || (lesson.lessonId <= 15 ? 1 : lesson.lessonId <= 30 ? 2 : 3);
+            return lvl === Number(selectedLevel);
+        });
+    }, [selectedLevel, translationLessonsProgress]);
 
     // Hàm chuẩn hóa chuỗi tiếng Trung để so khớp đáp án dịch không bị lỗi do dấu câu hoặc khoảng trắng
     const normalizeChineseStr = (str) => {
@@ -50,7 +78,7 @@ const QuizTab = ({ words, loading }) => {
         return str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"'，。！？；：（）“”‘’\s]/g, "");
     };
 
-    // Khởi động bài kiểm tra Luyện Dịch HSK 1
+    // Khởi động bài kiểm tra Luyện Dịch HSK
     const startTranslationQuiz = (lessonId) => {
         const lesson = window.hskProData?.lessons?.find(l => l.lessonId === lessonId);
         if (!lesson || !lesson.questions || lesson.questions.length === 0) return;
@@ -96,7 +124,15 @@ const QuizTab = ({ words, loading }) => {
         });
 
         if (!updated) {
-            progressList.push({ lessonId, title: `Bài ${lessonId}`, isCompleted: true, currentScore: finalScore });
+            const lesson = window.hskProData?.lessons?.find(l => l.lessonId === lessonId);
+            const level = lesson?.level || (lessonId <= 15 ? 1 : lessonId <= 30 ? 2 : 3);
+            progressList.push({ 
+                lessonId, 
+                level,
+                title: lesson?.title || `Bài ${lessonId}`, 
+                isCompleted: true, 
+                currentScore: finalScore 
+            });
         }
 
         localStorage.setItem('hskpro_translation_progress_v1', JSON.stringify(progressList));
@@ -135,7 +171,7 @@ const QuizTab = ({ words, loading }) => {
         }, 3200); // Đợi 3.2s giúp học viên ghi nhớ Chữ Hán & Pinyin đáp án đúng hiện trên màn hình
     };
 
-    // Bắt đầu làm trắc nghiệm từ vựng (Hàm gốc của bạn)
+    // Bắt đầu làm trắc nghiệm từ vựng (Hàm gốc giữ nguyên)
     const startQuiz = (mode) => {
         const cleanWords = words.filter(w => w.id !== 'error');
         if (cleanWords.length < 4) return;
@@ -321,7 +357,7 @@ const QuizTab = ({ words, loading }) => {
                                 : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                         }`}
                     >
-                        📝 Luyện Dịch HSK 1
+                        📝 Luyện Dịch HSK
                     </button>
                 </div>
 
@@ -367,18 +403,63 @@ const QuizTab = ({ words, loading }) => {
                     </div>
                 )}
 
-                {/* GIAO DIỆN PHÂN HỆ 2: VỞ BÀI TẬP LUYỆN DỊCH HSK 1 (TỪ FILE WORD) */}
+                {/* GIAO DIỆN PHÂN HỆ 2: VỞ BÀI TẬP LUYỆN DỊCH HSK ĐÃ PHÂN CẤP ĐỘ (1, 2, 3) */}
                 {activeSection === 'translation' && (
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
-                        <div className="mb-6 text-center">
-                            <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center justify-center gap-2">
-                                📚 Vở Bài Tập Luyện Dịch HSK 1 (Chuẩn 15 Bài)
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 space-y-6">
+                        <div className="text-center">
+                            <h3 className="text-lg md:text-xl font-bold text-slate-800 dark:text-white flex items-center justify-center gap-2">
+                                📚 Vở Bài Tập Luyện Dịch HSK {selectedLevel === 'all' ? '1 - 3' : selectedLevel} (Tổng số {filteredLessons.length} Bài)
                             </h3>
-                            <p className="text-xs text-slate-400 mt-1">Luyện phản xạ viết chữ Hán từ câu tiếng Việt tự nhiên</p>
+                            <p className="text-xs text-slate-400 mt-1">Luyện phản xạ viết chữ Hán từ câu dịch tiếng Việt tự nhiên</p>
                         </div>
 
+                        {/* THANH LỌC CẤP ĐỘ DỊCH PHÂN CHIA CHI TIẾT TỪNG 15 BÀI */}
+                        <div className="flex flex-wrap items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-950 p-1 rounded-2xl max-w-sm mx-auto border border-slate-200/40 dark:border-slate-850">
+                            <button 
+                                onClick={() => setSelectedLevel('1')}
+                                className={`px-4 py-1.5 text-[11px] font-bold rounded-xl transition duration-200 flex-1 ${
+                                    selectedLevel === '1' 
+                                        ? 'bg-white dark:bg-slate-800 shadow-sm text-emerald-600 dark:text-emerald-400' 
+                                        : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-350'
+                                }`}
+                            >
+                                HSK 1 (B1-15)
+                            </button>
+                            <button 
+                                onClick={() => setSelectedLevel('2')}
+                                className={`px-4 py-1.5 text-[11px] font-bold rounded-xl transition duration-200 flex-1 ${
+                                    selectedLevel === '2' 
+                                        ? 'bg-white dark:bg-slate-800 shadow-sm text-emerald-600 dark:text-emerald-400' 
+                                        : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-350'
+                                }`}
+                            >
+                                HSK 2 (B16-30)
+                            </button>
+                            <button 
+                                onClick={() => setSelectedLevel('3')}
+                                className={`px-4 py-1.5 text-[11px] font-bold rounded-xl transition duration-200 flex-1 ${
+                                    selectedLevel === '3' 
+                                        ? 'bg-white dark:bg-slate-800 shadow-sm text-emerald-600 dark:text-emerald-400' 
+                                        : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-350'
+                                }`}
+                            >
+                                HSK 3 (B31-45)
+                            </button>
+                            <button 
+                                onClick={() => setSelectedLevel('all')}
+                                className={`px-4 py-1.5 text-[11px] font-bold rounded-xl transition duration-200 flex-1 ${
+                                    selectedLevel === 'all' 
+                                        ? 'bg-white dark:bg-slate-800 shadow-sm text-emerald-600 dark:text-emerald-400' 
+                                        : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-350'
+                                }`}
+                            >
+                                Tất cả
+                            </button>
+                        </div>
+
+                        {/* DANH SÁCH BÀI TẬP SAU KHI LỌC */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {(window.hskProData?.lessons || []).map((lesson) => {
+                            {filteredLessons.map((lesson) => {
                                 const progInfo = translationLessonsProgress.find(p => p.lessonId === lesson.lessonId);
                                 const isDone = progInfo?.isCompleted || false;
                                 const maxSc = progInfo?.currentScore || 0;
@@ -386,20 +467,20 @@ const QuizTab = ({ words, loading }) => {
                                 return (
                                     <div 
                                         key={lesson.lessonId} 
-                                        className={`p-4 rounded-2xl border transition duration-200 flex flex-col justify-between space-y-3 ${
+                                        className={`p-4 rounded-2xl border transition duration-200 flex flex-col justify-between space-y-3 hover:shadow-md ${
                                             isDone 
                                                 ? 'bg-emerald-50/20 border-emerald-200/70 dark:bg-emerald-950/10 dark:border-emerald-900/50' 
-                                                : 'bg-slate-50/50 border-slate-150 dark:bg-slate-950/20 dark:border-slate-800'
+                                                : 'bg-slate-50/50 border-slate-150 dark:bg-slate-950/20 dark:border-slate-800/80'
                                         }`}
                                     >
                                         <div>
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-[10px] font-extrabold uppercase text-slate-400">Bài HỌC {lesson.lessonId}</span>
-                                                {isDone && (
-                                                    <span className="text-[9px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 px-2 py-0.5 rounded-md font-bold">
-                                                        Đã làm
-                                                    </span>
-                                                )}
+                                                <span className="text-[10px] font-extrabold uppercase text-slate-400">
+                                                    Bài HỌC {lesson.lessonId}
+                                                </span>
+                                                <span className="text-[9px] bg-blue-100/80 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400 px-1.5 py-0.5 rounded font-black">
+                                                    HSK {lesson.level || (lesson.lessonId <= 15 ? 1 : lesson.lessonId <= 30 ? 2 : 3)}
+                                                </span>
                                             </div>
                                             <h4 className="font-bold text-xs text-slate-700 dark:text-slate-200 truncate" title={lesson.title}>
                                                 {lesson.title}
@@ -424,6 +505,12 @@ const QuizTab = ({ words, loading }) => {
                                 );
                             })}
                         </div>
+                        
+                        {filteredLessons.length === 0 && (
+                            <div className="text-center py-12 text-slate-400 text-xs">
+                                Chưa có bài tập luyện dịch tương ứng với cấp độ này.
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -478,7 +565,7 @@ const QuizTab = ({ words, loading }) => {
                 <span className="text-xs font-bold text-slate-400 dark:text-slate-500"><i className="fas fa-star text-amber-500 mr-1"></i> Điểm: {score}</span>
             </div>
 
-            {/* GIAO DIỆN CHUYÊN DỤNG: LUYỆN DỊCH HSK 1 (TỪ FILE WORD) */}
+            {/* GIAO DIỆN CHUYÊN DỤNG: LUYỆN DỊCH HSK 1 - 3 (TỪ FILE WORD) */}
             {currentQ.type === 'translation' && (
                 <div className="text-center animate-fade-in space-y-5">
                     <div>

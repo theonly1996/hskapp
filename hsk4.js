@@ -2009,7 +2009,409 @@ window.hskData = [
         "meaning": "tụ họp, tụ tập, liên hoan", 
         "example": "参加好朋友的聚会 (Cānjiā hǎo péngyou de jùhuì) - Tham gia liên hoan họp mặt của bạn thân", 
         "tip": "Tụ (聚) có bộ Nhĩ (耳) lắng nghe và chúng nhân ngồi vây quanh tâm sự sẻ chia liên hoan mệt mỏi." 
+    },
+    { 
+        "id": 251, 
+        "word": "开玩笑", 
+        "pinyin": "kāi wánxiào", 
+        "meaning": "nói đùa, trêu chọc", 
+        "example": "别开玩笑了 (Bié kāi wánxiào le) - Đừng nói đùa nữa", 
+        "tip": "Khai (开) là mở ra, Ngoạn (玩) là chơi đùa, Tiếu (笑) là cười có bộ Trúc (⺮) ở trên. Mở đầu một câu chuyện vui để mang lại tiếng cười thoải mái." 
+    },
+    { 
+        "id": 252, 
+        "word": "看法", 
+        "pinyin": "kànfǎ", 
+        "meaning": "cách nhìn, quan điểm", 
+        "example": "谈谈你的看法 (Tán tán nǐ de kànfǎ) - Hãy nói về quan điểm của bạn", 
+        "tip": "Khán (看) là đặt tay (Thủ 扌) che trên mắt (Mục 目) để nhìn xa. Pháp (法) là phương pháp, cách thức. Nghĩa đen là cách thức mắt nhìn nhận một vấn đề." 
+    },
+    { 
+        "id": 253, 
+        "word": "考虑", 
+        "pinyin": "kǎolǜ", 
+        "meaning": "suy nghĩ, cân nhắc", 
+        "example": "我需要考虑一下 (Wǒ xūyào kǎolǜ yíxià) - Tôi cần cân nhắc một chút", 
+        "tip": "Khảo (考) chỉ sự già giặn, lão luyện. Lự (虑) có bộ Hổ (虍) và bộ Tâm (心). Suy nghĩ cẩn trọng cần tâm tính phải mạnh mẽ như hổ và sâu sắc từ tim." 
+    },
+    { 
+        "id": 254, 
+        "word": "科学", 
+        "pinyin": "kēxué", 
+        "meaning": "khoa học", 
+        "example": "科学技术 (Kēxué jìshù) - Kỹ thuật khoa học", 
+        "tip": "Khoa (科) gồm bộ Hòa (禾 - cây lúa) và chữ Đấu (斗 - cái đấu đong thóc). Cân đo, phân chia sản vật một cách chính xác, hệ thống chính là cơ sở của khoa học." 
+    },
+    { 
+        "id": 255, 
+        "word": "棵", 
+        "pinyin": "kē", 
+        "meaning": "cây (lượng từ)", 
+        "example": "一棵树 (Yì kē shù) - Một cái cây", 
+        "isMeasureWord": true, 
+        "tip": "Có bộ Mộc (木) chỉ cây cối ở bên trái và chữ Quả (果) ở bên phải. Lượng từ chuyên dùng để đếm các loại cây trồng có gốc rễ sinh quả." 
+    },
+    { 
+        "id": 256, 
+        "word": "可怜", 
+        "pinyin": "kělián", 
+        "meaning": "đáng thương, tội nghiệp", 
+        "example": "那个孩子真可怜 (Nàge háizi zhēn kělián) - Đứa trẻ đó thật tội nghiệp", 
+        "tip": "Khả (可) là có thể, Liên (怜) có bộ Tâm đứng (忄) chỉ cảm xúc. Trong lòng dấy lên sự đồng cảm, trắc ẩn có thể thương xót cho ai đó." 
+    },
+    { 
+        "id": 257, 
+        "word": "可是", 
+        "pinyin": "kěshì", 
+        "meaning": "nhưng, cơ mà", 
+        "example": "虽然累，可是很高兴 (Suīrán lèi, kěshì hěn gāoxíng) - Tuy mệt nhưng rất vui", 
+        "tip": "Khả (可) kết hợp với Thị (是 - đúng vậy). Thừa nhận vế trước đúng, nhưng (可是) ngay lập tức rẽ hướng sang một thực tế khác đối lập." 
+    },
+    { 
+        "id": 258, 
+        "word": "可惜", 
+        "pinyin": "kěxī", 
+        "meaning": "đáng tiếc", 
+        "example": "太可惜了 (Tài kěxī le) - Đáng tiếc quá", 
+        "tip": "Tích (惜) có bộ Tâm đứng (忄) và chữ Tích (昔 - ngày xưa). Nuối tiếc những điều tốt đẹp đã qua trong quá khứ làm cho lòng đau nhói." 
+    },
+    { 
+        "id": 259, 
+        "word": "客厅", 
+        "pinyin": "kètīng", 
+        "meaning": "phòng khách", 
+        "example": "坐在客厅看电视 (Zuò zài kètīng kàn diànshì) - Ngồi ở phòng khách xem tivi", 
+        "tip": "Khách (客) là người đến nhà chơi. Thính (厅) có bộ Quảng (广 - mái nhà lớn). Gian phòng rộng rãi dưới mái nhà chuyên dùng để tiếp đón khách khứa." 
+    },
+    { 
+        "id": 260, 
+        "word": "肯定", 
+        "pinyin": "kěndìng", 
+        "meaning": "khẳng định, chắc chắn", 
+        "example": "他肯定会来 (Tā kěndìng huì lái) - Anh ấy chắc chắn sẽ đến", 
+        "tip": "Khẳng (肯) có bộ Nguyệt (月 - xương thịt), nghĩa gốc là đồng ý. Định (定) là cố định. Ý nói lời khẳng định chắc nịch, kiên định từ trong xương tủy." 
+    },
+    { 
+        "id": 261, 
+        "word": "空气", 
+        "pinyin": "kōngqì", 
+        "meaning": "không khí", 
+        "example": "这里的空气很好 (Zhè lǐ de kōngqì hěn hǎo) - Không khí ở đây rất tốt", 
+        "tip": "Không (空) dưới bộ Huyệt (穴 - hang động) là chữ Công (工). Khoảng trống không gian bên trong hang đá. Khí (气) là luồng hơi luân chuyển xung quanh." 
+    },
+    { 
+        "id": 262, 
+        "word": "苦", 
+        "pinyin": "kǔ", 
+        "meaning": "đắng, khổ cực", 
+        "example": "药很苦 (Yào hěn kǔ) - Thuốc rất đắng", 
+        "tip": "Khổ (苦) có bộ Thảo (艹 - cây cỏ) ở trên và chữ Cổ (古 - xưa cũ) ở dưới. Các loại thảo mộc nếm vào có vị đắng ngắt từ ngàn xưa, ví như nỗi gian khổ." 
+    },
+    { 
+        "id": 263, 
+        "word": "宽", 
+        "pinyin": "kuān", 
+        "meaning": "rộng, rộng rãi", 
+        "example": "这条马路很宽 (Zhè tiáo mǎlù hěn kuān) - Con đường này rất rộng rãi", 
+        "tip": "Khoan (宽) dưới mái nhà (宀) là chữ Kiến (见) mang nghĩa nhìn thấy rộng mở. Ngôi nhà có không gian bao la, nhìn đâu cũng thấy thông thoáng." 
+    },
+    { 
+        "id": 264, 
+        "word": "困", 
+        "pinyin": "kùn", 
+        "meaning": "buồn ngủ / khốn đốn, vây hãm", 
+        "example": "我困了，想睡觉 (Wǒ kùn le, xiǎng shuìjiào) - Tôi buồn ngủ rồi, muốn đi ngủ", 
+        "tip": "Khốn (困) có bộ Vi (囗) bao quanh bên ngoài cây gỗ (Mộc 木). Cây bị rào kín không thể phát triển, ví như cơ thể mệt mỏi bị vây hãm, chỉ muốn nhắm mắt." 
+    },
+    { 
+        "id": 265, 
+        "word": "扩大", 
+        "pinyin": "kuòdà", 
+        "meaning": "mở rộng", 
+        "example": "扩大工作范围 (Kuòdà gōngzuò fànwéi) - Mở rộng phạm vi công việc", 
+        "tip": "Khuếch (扩) có bộ Thủ (扌- tay) và chữ Quảng (广 - rộng). Dùng đôi bàn tay ra sức kéo giãn, mở rộng không gian ra bốn bề." 
+    },
+    { 
+        "id": 266, 
+        "word": "拉", 
+        "pinyin": "lā", 
+        "meaning": "kéo, lôi", 
+        "example": "把门拉开 (Bǎ mén lā kāi) - Kéo cửa ra", 
+        "tip": "Lạp (拉) có bộ Thủ (扌- tay) ở bên trái và chữ Lập (立 - đứng) ở bên phải. Dùng sức của bàn tay để lôi kéo một vật đang đứng yên chuyển động về phía mình." 
+    },
+    { 
+        "id": 267, 
+        "word": "垃圾桶", 
+        "pinyin": "lājītǒng", 
+        "meaning": "thùng rác", 
+        "example": "扔进垃圾桶 (Rēng jìn lājītǒng) - Vứt vào thùng rác", 
+        "tip": "Thùng (桶) có bộ Mộc (木), ngày xưa làm bằng gỗ. Chiếc xô gỗ chuyên dùng để chứa đất cát, chất thải (垃圾 - lạp tạp đều có bộ Thổ 土)." 
+    },
+    { 
+        "id": 268, 
+        "word": "辣", 
+        "pinyin": "là", 
+        "meaning": "cay", 
+        "example": "这个菜 tai 辣了 (Zhè ge cài tài là le) - Món ăn này cay quá", 
+        "tip": "Lạt (辣) gồm bộ Tân (辛 - cay đắng, vất vả) và chữ Thúc (束 - bó buộc). Cảm giác vị giác bị kích thích mạnh mẽ, tê dại như bị bó chặt lại khi ăn phải ớt." 
+    },
+    { 
+        "id": 269, 
+        "word": "来不及", 
+        "pinyin": "láibují", 
+        "meaning": "không kịp", 
+        "example": "快点，要来不及了 (Kuài diǎn, yào láibují le) - Nhanh lên, sắp không kịp rồi", 
+        "tip": "Lai (来 - đến) bất (不 - không) cập (及 - bắt kịp). Dù có vội vã đến nơi cũng không thể bắt kịp tiến độ hoặc thời gian quy định nữa." 
+    },
+    { 
+        "id": 270, 
+        "word": "来得及", 
+        "pinyin": "láidejí", 
+        "meaning": "còn kịp, kịp", 
+        "example": "现在去还来得及 (Xiànzài qù hái láidejí) - Bây giờ đi vẫn còn kịp", 
+        "tip": "Lai (来) đắc (得 - đạt được) cập (及 - đuổi kịp). Hành động kịp thời giúp bản thân có thể đuổi kịp mục tiêu, giữ vững được cơ hội." 
+    },
+    { 
+        "id": 271, 
+        "word": "懒", 
+        "pinyin": "lǎn", 
+        "meaning": "lười biếng", 
+        "example": "他有点儿懒 (Tā yǒudiǎnr lǎn) - Anh ấy hơi lười một chút", 
+        "tip": "Lãn (懒) có bộ Tâm đứng (忄) chỉ tâm trạng, bên phải là chữ Lại (赖 - dựa dẫm). Tâm lý chỉ muốn dựa dẫm vào người khác, không chịu tự mình vận động." 
+    },
+    { 
+        "id": 272, 
+        "word": "浪费", 
+        "pinyin": "làngfèi", 
+        "meaning": "lãng phí", 
+        "example": "不要浪费时间 (Búyào làngfèi shíjiān) - Đừng lãng phí thời gian", 
+        "tip": "Lãng (浪) có bộ Thủy (氵) chỉ sóng nước xô đẩy tiêu tán. Phí (费) có bộ Bối (贝) chỉ tiền bạc. Tiền của trôi đi vèo vèo như sóng nước mà không đem lại giá trị." 
+    },
+    { 
+        "id": 273, 
+        "word": "浪漫", 
+        "pinyin": "làngmàn", 
+        "meaning": "lãng mạn", 
+        "example": "浪漫的爱情 (Làngmàn de àiqíng) - Tình yêu lãng mạn", 
+        "tip": "Cả Lãng (浪) và Mạn (漫) đều có bộ Thủy (氵). Cảm xúc ngọt ngào trào dâng, tràn trề, phóng khoáng tựa như làn nước mát nhẹ nhàng vỗ về tâm hồn." 
+    },
+    { 
+        "id": 274, 
+        "word": "老虎", 
+        "pinyin": "lǎohǔ", 
+        "meaning": "con hổ", 
+        "example": "一只老虎 (Yì zhī lǎohǔ) - Một con hổ", 
+        "tip": "Hổ (虎) là chữ tượng hình phác họa lại cái đầu dữ tợn và vằn vện của chúa sơn lâm. Thêm chữ Lão (老) đứng trước để tôn xưng sự uy nghiêm của loài thú này." 
+    },
+    { 
+        "id": 275, 
+        "word": "冷静", 
+        "pinyin": "lěngjìng", 
+        "meaning": "bình tĩnh", 
+        "example": "遇到事情要冷静 (Yùdào shìqíng yào lěngjìng) - Gặp chuyện phải bình tĩnh", 
+        "tip": "Lãnh (冷) có bộ Băng (冫) làm dịu cái đầu nóng. Tịnh (净) biểu thị sự trong suốt, tĩnh lặng. Đầu óc mát lạnh, thông suốt giúp đưa ra quyết định sáng suốt." 
+    },
+    { 
+        "id": 276, 
+        "word": "礼貌", 
+        "pinyin": "lǐmào", 
+        "meaning": "lễ phép, lịch sự", 
+        "example": "对人有礼貌 (Duì rén yǒu lǐmào) - Lễ phép với mọi người", 
+        "tip": "Lễ (礼) có bộ Thị (示 - nghi lễ tôn nghiêm). Mạo (貌) là diện mạo, dáng vẻ gương mặt. Dáng vẻ cung kính, đúng chuẩn mực đạo đức khi giao tiếp." 
+    },
+    { 
+        "id": 277, 
+        "word": "理发", 
+        "pinyin": "lǐfà", 
+        "meaning": "cắt tóc", 
+        "example": "去理发店理发 (Qù lǐfàdiàn lǐfà) - Đi đến tiệm cắt tóc để cắt tóc", 
+        "tip": "Lý (理) là sửa sang, chỉnh đốn. Phát (发) là tóc tai trên đầu. Động tác sửa sang, cắt tỉa lại mái tóc cho gọn gàng, tươm tất." 
+    },
+    { 
+        "id": 278, 
+        "word": "理解", 
+        "pinyin": "lǐjiě", 
+        "meaning": "thấu hiểu, hiểu cho", 
+        "example": "请理解我的决定 (Qǐng lǐjiě wǒ de juédìng) - Xin hãy thấu hiểu cho quyết định của tôi", 
+        "tip": "Lý (理) có bộ Vương (王 - mài ngọc theo thớ vân). Giải (解) dùng dao cắt sừng trâu. Thấu suốt thớ vân của ngọc và tháo gỡ rắc rối để thực sự thấu hiểu bản chất." 
+    },
+    { 
+        "id": 279, 
+        "word": "理想", 
+        "pinyin": "lǐxiǎng", 
+        "meaning": "lý tưởng", 
+        "example": "实现理想 (Shíxiàn lǐxiǎng) - Thực hiện lý tưởng", 
+        "tip": "Tưởng (想) gồm chữ Tương (相 - xem xét) trên bộ Tâm (心 - suy nghĩ). Những suy nghĩ nung nấu, khao khát cao đẹp nhất được thiết lập một cách có lý trí (理)." 
+    },
+    { 
+        "id": 280, 
+        "word": "力气", 
+        "pinyin": "lìqi", 
+        "meaning": "sức lực, sức mạnh", 
+        "example": "花了很多力气 (Huā le hěn duō lìqi) - Tốn rất nhiều sức lực", 
+        "tip": "Lực (力) vẽ bắp tay cuồn cuộn sức mạnh cơ bắp. Khí (气) là năng lượng lưu thông bên trong. Sự kết hợp giữa năng lượng và cơ bắp tạo nên sức lực gánh vác." 
+    },
+    { 
+        "id": 281, 
+        "word": "厉害", 
+        "pinyin": "lìhai", 
+        "meaning": "lợi hại, dữ dội, ghê gớm", 
+        "example": "他打羽毛球很厉害 (Tā dǎ yǔmáoqiú hěn lìhai) - Anh ấy đánh cầu lông rất lợi hại", 
+        "tip": "Lợi (厉) dưới sườn núi dốc là chữ Vạn (万), chỉ sự mài giũa dữ dội. Hại (害) dưới mái nhà có lời nói (Khẩu 口) gây tổn thương. Ý chỉ năng lực cực kỳ xuất sắc." 
+    },
+    { 
+        "id": 282, 
+        "word": "俩", 
+        "pinyin": "liǎ", 
+        "meaning": "hai, đôi (lượng từ rút gọn)", 
+        "example": "我们俩 (Wǒmen liǎ) - Hai chúng tôi", 
+        "tip": "Lưỡng (俩) có bộ Nhân đứng (亻) bên trái và chữ Lưỡng (两 - hai) bên phải. Chuyên dùng để chỉ đích danh hai người đang đứng song hành mà không cần thêm từ '个'." 
+    },
+    { 
+        "id": 283, 
+        "word": "连", 
+        "pinyin": "lián", 
+        "meaning": "ngay cả... cũng / liền, liên tục", 
+        "example": "连他都不知道 (Lián tā dōu bù zhīdào) - Ngay cả anh ấy cũng không biết", 
+        "tip": "Liên (连) gồm bộ Sước (辶- di chuyển bước đi) nâng đỡ chiếc xe (Xa 车). Những cỗ xe nối đuôi nhau hành quân liên tục trên đường không đứt đoạn." 
+    },
+    { 
+        "id": 284, 
+        "word": "联系", 
+        "pinyin": "liánxì", 
+        "meaning": "liên hệ, liên lạc", 
+        "example": "保持联系 (Bǎochí liánxì) - Giữ liên lạc", 
+        "tip": "Hệ (系) vẽ hình sợi tơ thắt nút kết nối. Kết nối các mối quan hệ qua lại liên tục (连) như các sợi dây cáp thông tin được nối liền mạch." 
+    },
+    { 
+        "id": 285, 
+        "word": "凉快", 
+        "pinyin": "liángkuai", 
+        "meaning": "mát mẻ, dễ chịu", 
+        "example": "今天很凉快 (Jīntiān hěn liángkuai) - Hôm nay rất mát mẻ", 
+        "tip": "Lương (凉) có bộ Băng (冫- se lạnh). Khoái (快) có bộ Tâm đứng (忄- lòng vui sướng). Tiết trời se lạnh mang lại cảm giác sảng khoái, dễ chịu từ sâu trong lòng." 
+    },
+    { 
+        "id": 286, 
+        "word": "亮", 
+        "pinyin": "liàng", 
+        "meaning": "sáng, tỏa sáng", 
+        "example": "天亮了 (Tiān liàng le) - Trời sáng rồi", 
+        "tip": "Lượng (亮) gồm phần trên giống mái hiên cao ráo đón ánh ban mai rực rỡ, chiếu rọi vạn vật hiện rõ mồn một không còn tối tăm." 
+    },
+    { 
+        "id": 287, 
+        "word": "流行", 
+        "pinyin": "liúxíng", 
+        "meaning": "phổ biến, thịnh hành", 
+        "example": "流行 歌曲 (Liúxíng gēqǔ) - Ca khúc thịnh hành", 
+        "tip": "Lưu (流) là dòng nước tuôn chảy xiết. Hành (行) là bước chân đi trên đường lớn. Xu hướng mới lan truyền nhanh chóng, trôi chảy đi khắp muôn phương như dòng nước." 
+    },
+    { 
+        "id": 288, 
+        "word": "流泪", 
+        "pinyin": "liúlèi", 
+        "meaning": "chảy nước mắt, khóc", 
+        "example": "感动得流泪 (Gǎndòng de liúlèi) - Cảm động phát khóc (chảy nước mắt)", 
+        "tip": "Lệ (泪) gồm bộ Thủy (氵- nước) bên cạnh con mắt (Mục 目). Nước tuôn ra từ khóe mắt rơi rụng xuống chính là giọt nước mắt dạt dào cảm xúc." 
+    },
+    { 
+        "id": 289, 
+        "word": "留", 
+        "pinyin": "liú", 
+        "meaning": "ở lại, giữ lại", 
+        "example": "留下来吃饭 (Liú xiàlai chīfàn) - Ở lại ăn cơm đi", 
+        "tip": "Lưu (留) gồm chữ Mão (卯 - mở cửa) ở trên bộ Điền (田 - ruộng đất). Định cư, gắn bó lâu dài bên mảnh ruộng quê hương không rời đi xứ khác." 
+    },
+    { 
+        "id": 290, 
+        "word": "流利", 
+        "pinyin": "liúlì", 
+        "meaning": "lưu loát, trôi chảy", 
+        "example": "汉语说得很流利 (Hànyǔ shuō de hěn liúlì) - Nói tiếng Trung rất lưu loát", 
+        "tip": "Lợi (利) có bộ Đao (刀) cắt vật bén ngọt, dứt khoát. Ngôn từ tuôn chảy mượt mà như dòng nước (流) và sắc bén, gãy gọn không bị vấp váp." 
+    },
+    { 
+        "id": 291, 
+        "word": "乱", 
+        "pinyin": "luàn", 
+        "meaning": "lộn xộn, bừa bãi", 
+        "example": "房间很乱 (Fángjiān hěn luàn) - Căn phòng rất bừa bãi", 
+        "tip": "Loạn (乱) có bộ Ất (乙 - hình sợi dây uốn éo rối rắm). Các cuộn tơ lụa bị rối tung lên lung tung khiến không gian mất trật tự, bừa bộn." 
+    },
+    { 
+        "id": 292, 
+        "word": "律师", 
+        "pinyin": "lǜshī", 
+        "meaning": "luật sư", 
+        "example": "请律师帮忙 (Qǐng lǜshī bāngmáng) - Mời luật sư giúp đỡ", 
+        "tip": "Luật (律) có bộ Sách (彳- bước đi theo quy tắc phép tắc). Sư (师) là người thầy chuyên nghiệp. Người gánh vác việc dẫn dắt luật pháp, bảo vệ công lý." 
+    },
+    { 
+        "id": 293, 
+        "word": "麻烦", 
+        "pinyin": "máfan", 
+        "meaning": "phiền phức, làm phiền", 
+        "example": "给你带来麻烦 (Gěi nǐ dàilái máfan) - Mang lại phiền phức cho bạn", 
+        "tip": "Ma (麻) là cây gai rậm rạp dưới mái nhà. Phiền (烦) có bộ Hỏa (火) thiêu đốt bên cạnh cái đầu (Hiệt 页). Đầu óc nóng bừng như lửa đốt vì vướng vào đống gai rắc rối." 
+    },
+    { 
+        "id": 294, 
+        "word": "马虎", 
+        "pinyin": "mǎhu", 
+        "meaning": "qua loa, cẩu thả", 
+        "example": "做事不能马虎 (Zuòshì bùnéng mǎhu) - Làm việc không được qua loa cẩu thả", 
+        "tip": "Ghép từ con Ngựa (马) và con Hổ (虎). Người thợ vẽ cái đầu hổ nhưng thân mình ngựa, tính khí cẩu thả, mập mờ dẫn đến việc làm hỏng việc." 
+    },
+    { 
+        "id": 295, 
+        "word": "满", 
+        "pinyin": "mǎn", 
+        "meaning": "đầy, thỏa mãn", 
+        "example": "把油箱加满 (Bǎ yóuxiāng jiā mǎn) - Đổ đầy bình xăng", 
+        "tip": "Mãn (满) có bộ Thủy (氵- nước). Nước dâng lên ngập tràn, mấp mé bờ đê biểu thị trạng thái đầy ắp, trọn vẹn, không còn thiếu thốn." 
+    },
+    { 
+        "id": 296, 
+        "word": "毛巾", 
+        "pinyin": "máojīn", 
+        "meaning": "khăn mặt, khăn tắm", 
+        "example": "一条干净的毛巾 (Yì tiáo gānjìng de máojīn) - Một chiếc khăn mặt sạch sẽ", 
+        "tip": "Mao (毛) là sợi lông, sợi bông mịn màng. Cân (巾) là miếng vải dệt thời xưa. Miếng vải có bề mặt bông mềm mại chuyên dùng để lau chùi cơ thể." 
+    },
+    { 
+        "id": 297, 
+        "word": "免费", 
+        "pinyin": "miǎnfèi", 
+        "meaning": "miễn phí", 
+        "example": "免费 参观 (Miǎnfèi cānguān) - Tham quan miễn phí", 
+        "tip": "Miễn (免) là bãi bỏ, cởi bỏ chiếc mũ quan trường xưa. Phí (费) là tiền của tiêu hao. Bãi bỏ hoàn toàn các khoản tiền tài cần chi trả." 
+    },
+    { 
+        "id": 298, 
+        "word": "目的", 
+        "pinyin": "mùdì", 
+        "meaning": "mục đích", 
+        "example": "达到目的 (Dádào mùdì) - Đạt được mục đích", 
+        "tip": "Mục (目) là con mắt nhìn hướng thẳng. Đích (的) ban đầu chỉ tâm điểm của bia bắn cung xưa. Con mắt luôn tập trung hướng về hồng tâm để ngắm bắn chuẩn xác." 
+    },
+    { 
+        "id": 299, 
+        "word": "内容", 
+        "pinyin": "nèiróng", 
+        "meaning": "nội dung", 
+        "example": "内容很丰富 (Nèiróng hěn fēngfù) - Nội dung rất phong phú", 
+        "tip": "Nội (内) là bước vào bên trong ranh giới. Dung (容) có bộ Miên (宀 - mái nhà) dùng để chứa đựng. Tất cả những giá trị, thông tin cốt lõi được chứa đựng bên trong." 
+    },
+    { 
+        "id": 300, 
+        "word": "耐心", 
+        "pinyin": "nàixīn", 
+        "meaning": "kiên nhẫn, nhẫn nại", 
+        "example": "对孩子要有耐心 (Duì háizi yào yǒu nàixīn) - Đối với trẻ con phải có lòng kiên nhẫn", 
+        "tip": "Nại (耐) có bộ Nhi (而 - chòm râu dưới cằm cần thời gian dài nuôi dưỡng). Tân (心) là tấm lòng. Giữ vững tấm lòng thản nhiên, tĩnh lặng chịu đựng thử thách theo thời gian." 
     }
+
 ];
 
 // Cơ chế đồng bộ hóa thông minh tương thích ngược với code cũ của bạn
