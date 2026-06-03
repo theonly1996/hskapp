@@ -6,6 +6,13 @@ const WordCard = ({ word, isBookmarked, onToggleBookmark, onShowStroke, learning
     const parsed = React.useMemo(() => parseExample(word.example), [word.example]);
     const posInfo = POS_MAP[word.pos] || POS_MAP['other'];
 
+    // Tự động phân tích các bộ thủ xuất hiện trong chữ Hán này bằng hàm tiện ích từ Canvas utils.js
+    const matchedRadicals = React.useMemo(() => {
+        return typeof window.findRadicalsInWord === 'function' 
+            ? window.findRadicalsInWord(word.word)
+            : [];
+    }, [word.word]);
+
     const [isSpeaking, setIsSpeaking] = React.useState(false);
     const [speechStatus, setSpeechStatus] = React.useState(null); 
     const [heardText, setHeardText] = React.useState("");
@@ -114,6 +121,22 @@ const WordCard = ({ word, isBookmarked, onToggleBookmark, onShowStroke, learning
                     </div>
 
                     <p className="text-teal-600 dark:text-teal-400 font-semibold mb-2">{word.meaning}</p>
+                    
+                    {/* Hiển thị tự động danh sách các bộ thủ cấu thành chữ Hán */}
+                    {matchedRadicals.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                            {matchedRadicals.map((rad, idx) => (
+                                <span 
+                                    key={idx} 
+                                    className="inline-flex items-center gap-1 text-[10px] bg-indigo-50/80 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-lg font-bold border border-indigo-100/30 dark:border-indigo-900/30 cursor-help transition hover:scale-105 active:scale-95"
+                                    title={`Bộ thủ: ${rad.radical}\nTên bộ: ${rad.name}\nÝ nghĩa: ${rad.meaning}\nMẹo: ${rad.tip}`}
+                                >
+                                    <span className="font-extrabold text-[11px] text-indigo-700 dark:text-indigo-300">{rad.radical.split(' ')[0]}</span>
+                                    <span className="opacity-90">{rad.name}</span>
+                                </span>
+                            ))}
+                        </div>
+                    )}
                     
                     {parsed.zh && (
                         <div className="text-xs bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/40">
