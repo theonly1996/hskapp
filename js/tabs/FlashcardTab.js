@@ -7,10 +7,25 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
     const [currentIndex, setCurrentIndex] = useStateFlashcard(0);
     const [isFlipped, setIsFlipped] = useStateFlashcard(false);
     const [autoPlaySpeech, setAutoPlaySpeech] = useStateFlashcard(true);
+    const [isTransitioning, setIsTransitioning] = useStateFlashcard(false); // Chống spam click và lỗi chuyển trạng thái nhanh
 
-    const cleanWords = useMemoFlashcard(() => words.filter(w => w.id !== 'error'), [words]);
+    // Lọc cuốn chiếu: Chỉ hiển thị những từ CHƯA thuộc (không có trạng thái 'mastered')
+    const cleanWords = useMemoFlashcard(() => {
+        return words
+            .filter(w => w.id !== 'error')
+            .filter(w => (progress[w.id] || 'unlearned') !== 'mastered');
+    }, [words, progress]);
 
-    // Thêm useEffect này vào ngay dưới các useEffect khác trong FlashcardTab
+    const currentWord = cleanWords[currentIndex];
+
+    // Đảm bảo currentIndex luôn hợp lệ khi danh sách bị co hẹp lại do học viên bấm "Đã thuộc"
+    useEffectFlashcard(() => {
+        if (cleanWords.length > 0 && currentIndex >= cleanWords.length) {
+            setCurrentIndex(0);
+        }
+    }, [cleanWords.length, currentIndex]);
+
+    // Xử lý các phím tắt nâng cao cho việc học nhanh bằng bàn phím
     useEffectFlashcard(() => {
         const handleKeyDown = (e) => {
             if (e.code === 'Space') {
@@ -20,14 +35,19 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
                 handleNext();
             } else if (e.code === 'ArrowLeft') {
                 handlePrev();
+            } else if (isFlipped && !isTransitioning && currentWord) {
+                // Chỉ cho phép đánh giá bằng phím số khi thẻ ĐANG LẬT MẶT SAU để tránh thao tác nhầm
+                if (e.key === '1') handleStatusClick('unlearned');
+                else if (e.key === '2') handleStatusClick('learning');
+                else if (e.key === '3') handleStatusClick('mastered');
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         
-        // Dọn dẹp sự kiện khi rời khỏi tab Flashcard
+        // Dọn dẹp sự kiện khi rời khỏi tab Flashcard hoặc cập nhật state
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isFlipped, cleanWords, currentIndex]); // Dependencies cần thiết
+    }, [isFlipped, cleanWords, currentIndex, isTransitioning, currentWord]); // Dependencies đầy đủ và bảo mật
     
     useEffectFlashcard(() => {
         setCurrentIndex(0);
@@ -42,39 +62,64 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
     }, [currentIndex, cleanWords, autoPlaySpeech]);
 
     if (loading) return <LoadingScreen message="Đang nạp bộ Flashcard..." />;
+    
+    // Giao diện khi bạn đã thuộc hoàn toàn tất cả các từ trong lượt này
     if (cleanWords.length === 0) {
         return (
-            <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 animate-fade-in max-w-md mx-auto">
-                <i className="far fa-clone text-slate-300 text-4xl mb-3"></i>
-                <p className="text-slate-500 dark:text-slate-400 font-bold">Không có từ vựng nào để tạo Flashcard.</p>
+            <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 animate-fade-in max-w-md mx-auto px-6 shadow-sm">
+                <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                    <i className="fas fa-check-circle text-3xl"></i>
+                </div>
+                <h3 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 mb-1">Tuyệt vời!</h3>
+                <p className="text-slate-500 dark:text-slate-400 font-bold text-sm">Bạn đã thuộc sạch toàn bộ từ vựng trong danh sách này rồi!</p>
             </div>
         );
     }
 
-    const currentWord = cleanWords[currentIndex];
     const status = progress[currentWord.id] || 'unlearned';
 
     const handleFlip = () => {
+        if (isTransitioning) return;
         setIsFlipped(!isFlipped);
     };
 
     const handleNext = () => {
+        if (isTransitioning || cleanWords.length <= 1) return;
+        setIsTransitioning(true);
         setIsFlipped(false);
         setTimeout(() => {
             setCurrentIndex(prev => (prev + 1) % cleanWords.length);
+            setIsTransitioning(false);
         }, 150);
     };
 
     const handlePrev = () => {
+        if (isTransitioning || cleanWords.length <= 1) return;
+        setIsTransitioning(true);
         setIsFlipped(false);
         setTimeout(() => {
             setCurrentIndex(prev => (prev - 1 + cleanWords.length) % cleanWords.length);
+            setIsTransitioning(false);
         }, 150);
     };
 
     const handleStatusClick = (statusType) => {
+        if (isTransitioning) return;
+        
         onChangeStatus(currentWord.id, statusType);
-        handleNext();
+        
+        if (statusType === 'mastered') {
+            // Khi bấm "Đã thuộc", từ đó sẽ biến mất khỏi danh sách cleanWords.
+            // Chúng ta lật úp thẻ về mặt trước và giữ nguyên index (từ tiếp theo tự động đẩy lên)
+            setIsTransitioning(true);
+            setIsFlipped(false);
+            setTimeout(() => {
+                setIsTransitioning(false);
+            }, 150);
+        } else {
+            // Nếu chỉ là "Chưa thuộc" hoặc "Đang học", chuyển sang thẻ tiếp theo bình thường
+            handleNext();
+        }
     };
 
     return (
@@ -118,7 +163,7 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
                             <h2 className="text-7xl font-extrabold text-teal-600 dark:text-teal-400 tracking-wide select-none">
                                 {currentWord.word}
                             </h2>
-                            <p className="text-xs text-slate-400 font-semibold italic">Chạm vào thẻ để lật đáp án</p>
+                            <p className="text-xs text-slate-400 font-semibold italic">Chạm vào thẻ hoặc bấm phím Space để lật đáp án</p>
                         </div>
 
                         <div className="flex gap-2">
@@ -193,7 +238,9 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border dark:border-slate-800 text-center space-y-3">
-                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Đánh giá độ thuộc của bạn</p>
+                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                        Đánh giá độ thuộc của bạn {isFlipped && <span className="text-teal-500 font-extrabold">(Phím tắt 1 - 2 - 3)</span>}
+                    </p>
                     <div className="grid grid-cols-3 gap-2">
                         <button 
                             onClick={() => handleStatusClick('unlearned')}
