@@ -16,10 +16,23 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
         return saved ? JSON.parse(saved) : [];
     });
 
+    // State lưu danh sách từ vựng tự nhập ngoài thư viện hệ thống
+    const [customWords, setCustomWords] = useStateFlashcard(() => {
+        const saved = localStorage.getItem('flashcard_custom_words');
+        return saved ? JSON.parse(saved) : [];
+    });
+
     // States phục vụ việc tạo bài học mới
     const [newLessonName, setNewLessonName] = useStateFlashcard('');
     const [searchQuery, setSearchQuery] = useStateFlashcard('');
     const [selectedWordIds, setSelectedWordIds] = useStateFlashcard([]);
+
+    // States phục vụ việc thêm từ vựng mới tự thiết kế
+    const [customWordChinese, setCustomWordChinese] = useStateFlashcard('');
+    const [customWordPinyin, setCustomWordPinyin] = useStateFlashcard('');
+    const [customWordVietnamese, setCustomWordVietnamese] = useStateFlashcard('');
+    const [customWordExample, setCustomWordExample] = useStateFlashcard('');
+    const [showQuickAddForm, setShowQuickAddForm] = useStateFlashcard(false);
 
     // States điều khiển Flashcard
     const [currentIndex, setCurrentIndex] = useStateFlashcard(0);
@@ -27,39 +40,56 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
     const [autoPlaySpeech, setAutoPlaySpeech] = useStateFlashcard(true);
     const [isTransitioning, setIsTransitioning] = useStateFlashcard(false);
 
+    // State điều khiển hệ thống Modal Thông Báo / Xác Nhận tùy biến (Thay thế hoàn toàn alert/confirm)
+    const [customModal, setCustomModal] = useStateFlashcard(null); // { type: 'alert'|'confirm', message: '', onConfirm: () => {} }
+
+    // Hàm kích hoạt Modal thông báo thay thế alert()
+    const triggerAlert = (message) => {
+        setCustomModal({ type: 'alert', message });
+    };
+
+    // Hàm kích hoạt Modal hỏi đáp thay thế confirm()
+    const triggerConfirm = (message, onConfirmCallback) => {
+        setCustomModal({ type: 'confirm', message, onConfirm: onConfirmCallback });
+    };
+
+    // Hợp nhất danh sách từ vựng hệ thống và từ vựng tự chế của người dùng
+    const mergedWords = useMemoFlashcard(() => {
+        const systemWords = words.filter(w => w.id !== 'error');
+        return [...systemWords, ...customWords];
+    }, [words, customWords]);
+
     // Lọc từ vựng dựa trên bài học đang chọn & Loại bỏ từ "Đã thuộc" (Cuốn chiếu)
     const cleanWords = useMemoFlashcard(() => {
-        let baseWords = words.filter(w => w.id !== 'error');
+        let baseWords = mergedWords;
 
         if (activeLessonId === 'bookmarks') {
             baseWords = bookmarks;
         } else if (activeLessonId !== 'all') {
             const currentLesson = lessons.find(l => l.id === activeLessonId);
             if (currentLesson) {
-                baseWords = words.filter(w => currentLesson.wordIds.includes(w.id));
+                baseWords = mergedWords.filter(w => currentLesson.wordIds.includes(w.id));
             }
         }
 
         // Lọc cuốn chiếu: Loại bỏ những từ đã thuộc (mastered) khỏi vòng lặp học hiện tại
         return baseWords.filter(w => (progress[w.id] || 'unlearned') !== 'mastered');
-    }, [words, progress, activeLessonId, lessons, bookmarks]);
+    }, [mergedWords, progress, activeLessonId, lessons, bookmarks]);
 
     // Khắc phục triệt để lỗi "trắng màn hình" bằng cách tính toán safe index ngay trong quá trình render (Derive state)
-    // Tránh việc currentIndex bị out of bounds tạm thời trước khi useEffect đồng bộ kịp
     const safeCurrentIndex = (cleanWords.length > 0 && currentIndex >= cleanWords.length) ? 0 : currentIndex;
     const currentWord = cleanWords[safeCurrentIndex];
 
     // Lọc danh sách từ khi tìm kiếm trong màn hình "Tạo bài mới"
     const filteredWordsForSearch = useMemoFlashcard(() => {
-        const base = words.filter(w => w.id !== 'error');
-        if (!searchQuery.trim()) return base;
+        if (!searchQuery.trim()) return mergedWords;
         const q = searchQuery.toLowerCase().trim();
-        return base.filter(w => 
+        return mergedWords.filter(w => 
             w.word.toLowerCase().includes(q) ||
             (w.pinyin && w.pinyin.toLowerCase().includes(q)) ||
             (w.meaning && w.meaning.toLowerCase().includes(q))
         );
-    }, [words, searchQuery]);
+    }, [mergedWords, searchQuery]);
 
     // Đồng bộ index an toàn khi số lượng từ thay đổi (để đồng bộ state currentIndex sau render)
     useEffectFlashcard(() => {
@@ -106,14 +136,65 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
         setViewMode('flashcard');
     };
 
+    // Chức năng thêm một từ vựng cá nhân mới ngoài hệ thống
+    const handleAddCustomWord = () => {
+        if (!customWordChinese.trim()) {
+            triggerAlert("Vui lòng điền Chữ Hán / Chữ tiếng Trung!");
+            return;
+        }
+        if (!customWordVietnamese.trim()) {
+            triggerAlert("Vui lòng điền Nghĩa tiếng Việt!");
+            return;
+        }
+
+        const newWordId = 'user_word_' + Date.now();
+        const newWordObj = {
+            id: newWordId,
+            word: customWordChinese.trim(),
+            pinyin: customWordPinyin.trim() || '---',
+            meaning: customWordVietnamese.trim(),
+            example: customWordExample.trim() || '',
+            pos: 'noun', // Giá trị từ loại mặc định
+            isCustom: true // Đánh dấu từ do người dùng tự thêm
+        };
+
+        const updatedCustomWords = [...customWords, newWordObj];
+        setCustomWords(updatedCustomWords);
+        localStorage.setItem('flashcard_custom_words', JSON.stringify(updatedCustomWords));
+
+        // Tự động đánh dấu tích chọn từ này trong danh sách thiết lập bài học
+        setSelectedWordIds(prev => [...prev, newWordId]);
+
+        // Làm sạch form nhập liệu và đóng khung collapsible
+        setCustomWordChinese('');
+        setCustomWordPinyin('');
+        setCustomWordVietnamese('');
+        setCustomWordExample('');
+        setShowQuickAddForm(false);
+        triggerAlert("Đã lưu từ vựng cá nhân thành công và tự động thêm vào danh sách bài học!");
+    };
+
+    // Chức năng xóa từ vựng cá nhân vĩnh viễn
+    const handleDeleteCustomWord = (e, wordId) => {
+        e.stopPropagation();
+        e.preventDefault();
+        triggerConfirm("Bạn có chắc chắn muốn xóa vĩnh viễn từ vựng cá nhân này khỏi hệ thống?", () => {
+            const updated = customWords.filter(w => w.id !== wordId);
+            setCustomWords(updated);
+            localStorage.setItem('flashcard_custom_words', JSON.stringify(updated));
+            // Hủy chọn từ đó trong bài học nếu đang được tích
+            setSelectedWordIds(prev => prev.filter(id => id !== wordId));
+        });
+    };
+
     // Tạo bài học mới
     const handleCreateLesson = () => {
         if (!newLessonName.trim()) {
-            alert("Vui lòng điền tên bài học!");
+            triggerAlert("Vui lòng điền tên bài học!");
             return;
         }
         if (selectedWordIds.length === 0) {
-            alert("Vui lòng chọn ít nhất 1 từ vựng để học!");
+            triggerAlert("Vui lòng chọn ít nhất 1 từ vựng để bắt đầu học!");
             return;
         }
 
@@ -139,27 +220,27 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
     // Xóa bài học tự tạo
     const handleDeleteLesson = (e, lessonId) => {
         e.stopPropagation();
-        if (window.confirm("Bạn có chắc chắn muốn xóa bài học tự chọn này không?")) {
+        triggerConfirm("Bạn có chắc chắn muốn xóa bài học tự chọn này không?", () => {
             const updated = lessons.filter(l => l.id !== lessonId);
             setLessons(updated);
             localStorage.setItem('flashcard_custom_lessons', JSON.stringify(updated));
             if (activeLessonId === lessonId) {
                 setActiveLessonId('all');
             }
-        }
+        });
     };
 
     // Ôn tập lại từ đầu (Reset toàn bộ trạng thái từ của bài học này về 'unlearned')
     const handleResetLessonProgress = (e, targetWordIds) => {
         e.stopPropagation();
-        if (window.confirm("Đặt lại trạng thái học của toàn bộ từ trong bài này về 'Chưa thuộc' để ôn tập lại từ đầu?")) {
+        triggerConfirm("Đặt lại trạng thái học của toàn bộ từ trong bài này về 'Chưa thuộc' để ôn tập lại từ đầu?", () => {
             targetWordIds.forEach(id => {
                 onChangeStatus(id, 'unlearned');
             });
             setCurrentIndex(0);
             setIsFlipped(false);
-            alert("Đã đặt lại tiến trình học!");
-        }
+            triggerAlert("Đã đặt lại tiến trình ôn tập của bài thành công!");
+        });
     };
 
     // Đánh giá nhanh từ vựng
@@ -206,7 +287,7 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
 
     // Tính toán số liệu tiến độ của mỗi bài học
     const getLessonStats = (wordIds) => {
-        const lessonWords = words.filter(w => wordIds.includes(w.id));
+        const lessonWords = mergedWords.filter(w => wordIds.includes(w.id));
         let mastered = 0, learning = 0, unlearned = 0;
         lessonWords.forEach(w => {
             const stat = progress[w.id] || 'unlearned';
@@ -229,8 +310,48 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
     };
 
     return (
-        <div className="max-w-md mx-auto animate-fade-in flex flex-col gap-6">
+        <div className="max-w-md mx-auto animate-fade-in flex flex-col gap-6 relative">
             
+            {/* ==========================================
+                HỆ THỐNG CUSTOM MODAL THAY THẾ ALERT/CONFIRM
+               ========================================== */}
+            {customModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full border dark:border-slate-800 shadow-xl space-y-4 transform scale-100 transition-transform">
+                        <div className="flex items-center gap-3 text-teal-600 dark:text-teal-400">
+                            <i className={`fas ${customModal.type === 'confirm' ? 'fa-question-circle text-2xl' : 'fa-info-circle text-2xl'}`}></i>
+                            <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-800 dark:text-slate-100">
+                                {customModal.type === 'confirm' ? 'Xác nhận yêu cầu' : 'Thông báo hệ thống'}
+                            </h4>
+                        </div>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 font-bold leading-relaxed">
+                            {customModal.message}
+                        </p>
+                        <div className="flex gap-2 justify-end pt-2">
+                            {customModal.type === 'confirm' && (
+                                <button 
+                                    onClick={() => setCustomModal(null)}
+                                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl transition-colors"
+                                >
+                                    Hủy bỏ
+                                </button>
+                            )}
+                            <button 
+                                onClick={() => {
+                                    if (customModal.type === 'confirm' && customModal.onConfirm) {
+                                        customModal.onConfirm();
+                                    }
+                                    setCustomModal(null);
+                                }}
+                                className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-black text-xs rounded-xl transition-all shadow-sm"
+                            >
+                                Đồng ý
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* THỐNG KÊ & CHUYỂN ĐỔI CHẾ ĐỘ XEM */}
             <div className="flex justify-between items-center bg-white dark:bg-slate-900 px-4 py-3 rounded-2xl border dark:border-slate-800 shadow-sm">
                 <div className="flex flex-col">
@@ -284,13 +405,13 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
                             <div className="flex justify-between items-start mb-2">
                                 <div>
                                     <h4 className="font-extrabold text-slate-800 dark:text-slate-100 text-sm">Học tất cả từ vựng</h4>
-                                    <p className="text-[11px] text-slate-400 font-bold">Mặc định hệ thống ({words.filter(w => w.id !== 'error').length} từ)</p>
+                                    <p className="text-[11px] text-slate-400 font-bold">Mặc định hệ thống ({mergedWords.length} từ)</p>
                                 </div>
                                 <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded text-[10px] font-black">Hệ Thống</span>
                             </div>
                             {/* Thanh tiến độ */}
                             {(() => {
-                                const stats = getLessonStats(words.filter(w => w.id !== 'error').map(w => w.id));
+                                const stats = getLessonStats(mergedWords.map(w => w.id));
                                 return (
                                     <div className="space-y-1.5 mt-3">
                                         <div className="flex justify-between text-[10px] font-bold text-slate-500">
@@ -301,7 +422,7 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
                                         </div>
                                         <div className="flex justify-end gap-2 pt-1">
                                             <button 
-                                                onClick={(e) => handleResetLessonProgress(e, words.filter(w => w.id !== 'error').map(w => w.id))}
+                                                onClick={(e) => handleResetLessonProgress(e, mergedWords.map(w => w.id))}
                                                 className="text-[10px] font-extrabold text-rose-500 hover:underline"
                                                 title="Học lại tất cả từ đầu"
                                             >
@@ -425,6 +546,83 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
                         />
                     </div>
 
+                    {/* BỔ SUNG TÍNH NĂNG: THÊM NHANH TỪ CÁ NHÂN */}
+                    <div className="border border-teal-100 dark:border-teal-950/60 rounded-xl bg-teal-50/20 dark:bg-teal-950/5 overflow-hidden">
+                        <button
+                            type="button"
+                            onClick={() => setShowQuickAddForm(!showQuickAddForm)}
+                            className="w-full px-3 py-2.5 flex justify-between items-center text-xs font-extrabold text-teal-600 dark:text-teal-400 hover:bg-teal-50/40 dark:hover:bg-teal-950/20 transition-colors"
+                        >
+                            <span className="flex items-center gap-1.5">
+                                <i className="fas fa-plus-circle"></i> Thêm từ vựng mới tự chọn (Từ ngoài thư viện)
+                            </span>
+                            <i className={`fas fa-chevron-${showQuickAddForm ? 'up' : 'down'} text-[10px]`}></i>
+                        </button>
+
+                        {showQuickAddForm && (
+                            <div className="p-3 border-t border-teal-100 dark:border-teal-950/40 space-y-3 bg-white dark:bg-slate-950/40 animate-fade-in text-left">
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="space-y-0.5">
+                                        <label className="text-[9px] font-black uppercase text-slate-400">Chữ Hán *</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Ví dụ: 北京"
+                                            value={customWordChinese}
+                                            onChange={(e) => setCustomWordChinese(e.target.value)}
+                                            className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border dark:border-slate-800 rounded-lg text-xs font-bold"
+                                        />
+                                    </div>
+                                    <div className="space-y-0.5">
+                                        <label className="text-[9px] font-black uppercase text-slate-400">Phiên âm Pinyin</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Ví dụ: Běijīng"
+                                            value={customWordPinyin}
+                                            onChange={(e) => setCustomWordPinyin(e.target.value)}
+                                            className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border dark:border-slate-800 rounded-lg text-xs font-bold"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-0.5">
+                                    <label className="text-[9px] font-black uppercase text-slate-400">Nghĩa tiếng Việt *</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Ví dụ: Bắc Kinh (Thủ đô Trung Quốc)"
+                                        value={customWordVietnamese}
+                                        onChange={(e) => setCustomWordVietnamese(e.target.value)}
+                                        className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border dark:border-slate-800 rounded-lg text-xs font-bold"
+                                    />
+                                </div>
+                                <div className="space-y-0.5">
+                                    <label className="text-[9px] font-black uppercase text-slate-400">Ví dụ minh họa (Nếu có)</label>
+                                    <textarea 
+                                        placeholder="Ví dụ: 我去过北京。 (Tôi đã từng đi Bắc Kinh.)"
+                                        value={customWordExample}
+                                        onChange={(e) => setCustomWordExample(e.target.value)}
+                                        rows="1.5"
+                                        className="w-full px-2 py-1 bg-slate-50 dark:bg-slate-900 border dark:border-slate-800 rounded-lg text-[11px] font-semibold resize-none"
+                                    ></textarea>
+                                </div>
+                                <div className="flex justify-end gap-1.5 pt-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowQuickAddForm(false)}
+                                        className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-md text-[10px] font-bold hover:bg-slate-200"
+                                    >
+                                        Hủy bỏ
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleAddCustomWord}
+                                        className="px-3 py-1 bg-teal-600 text-white rounded-md text-[10px] font-black hover:bg-teal-700 shadow-sm"
+                                    >
+                                        Lưu & Chọn từ này
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     {/* Thanh tìm kiếm từ */}
                     <div className="space-y-1">
                         <label className="text-[11px] font-black uppercase text-slate-400">Tìm từ vựng để thêm ({selectedWordIds.length} đã chọn)</label>
@@ -465,13 +663,30 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
                                             className="rounded text-teal-600 focus:ring-teal-500 h-3.5 w-3.5"
                                         />
                                         <div className="flex-1 flex justify-between items-center">
-                                            <div>
+                                            <div className="flex items-center gap-1.5">
                                                 <span className="font-extrabold text-slate-800 dark:text-slate-100 text-sm tracking-wide">{word.word}</span>
-                                                <span className="text-[10px] text-teal-600 dark:text-teal-400 font-bold ml-2">[{word.pinyin}]</span>
+                                                <span className="text-[10px] text-teal-600 dark:text-teal-400 font-bold">[{word.pinyin}]</span>
+                                                {word.isCustom && (
+                                                    <span className="px-1 py-0.2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[9px] font-black rounded-sm uppercase tracking-wider">
+                                                        Cá nhân
+                                                    </span>
+                                                )}
                                             </div>
-                                            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-bold truncate max-w-[150px]">
-                                                {word.meaning}
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-bold truncate max-w-[120px]">
+                                                    {word.meaning}
+                                                </span>
+                                                {word.isCustom && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => handleDeleteCustomWord(e, word.id)}
+                                                        className="p-1 hover:text-rose-500 text-slate-300 transition-colors"
+                                                        title="Xóa vĩnh viễn từ này"
+                                                    >
+                                                        <i className="fas fa-trash text-[10px]"></i>
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </label>
                                 );
@@ -536,7 +751,7 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
                                 <button 
                                     onClick={(e) => {
                                         if (activeLessonId === 'all') {
-                                            handleResetLessonProgress(e, words.filter(w => w.id !== 'error').map(w => w.id));
+                                            handleResetLessonProgress(e, mergedWords.map(w => w.id));
                                         } else if (activeLessonId === 'bookmarks') {
                                             handleResetLessonProgress(e, bookmarks.map(w => w.id));
                                         } else {
@@ -569,7 +784,7 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
                                     <div className="absolute inset-0 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-3xl p-6 shadow-md flex flex-col items-center justify-between backface-hidden">
                                         <div className="w-full flex justify-between items-center">
                                             <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-50 dark:bg-slate-950 px-2 py-0.5 rounded border dark:border-slate-800">
-                                                Mặt trước (Nhận diện)
+                                                Mặt trước (Nhận diện) {currentWord.isCustom && '⭐'}
                                             </span>
                                             <button 
                                                 onClick={(e) => { e.stopPropagation(); onToggleBookmark(currentWord); }}
@@ -611,7 +826,7 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
                                                 Mặt sau (Giải nghĩa)
                                             </span>
                                             <span className="text-xs font-bold text-slate-400 italic">
-                                                {POS_MAP[currentWord.pos]?.name || 'Khác'}
+                                                {currentWord.isCustom ? 'Từ cá nhân' : (POS_MAP[currentWord.pos]?.name || 'Khác')}
                                             </span>
                                         </div>
 
