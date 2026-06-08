@@ -1,5 +1,5 @@
 // =========================================================================
-// CƠ SỞ DỮ LIỆU GIÁO TRÌNH CHUẨN HSK 1 - 2 - 3 TOÀN DIỆN
+// CƠ SỞ DỮ LIỆU GIÁO TRÌNH CHUẨN HSK 1 - 2 - 3 TOÀN DIỆN (ĐÃ FIX LỖI)
 // =========================================================================
 window.hskCurriculumData = {
     1: [
@@ -71,8 +71,8 @@ window.hskCurriculumData = {
             ],
             grammar: "1. Hỏi tên: Sử dụng '你叫什么名字？'.\n2. Động từ phán đoán '是': Khẳng định 'A 是 B', phủ định dùng 'A 不是 B'.\n3. Trợ từ nghi vấn '吗': Đặt cuối câu để tạo câu hỏi Có/Không (Ví dụ: 你是老师吗？).",
             quiz: [
-                { q: "Để hỏi 'Bạn tên là gì?', ta nói câu nào?", options: ["你是谁？", "你好吗？", "幕你叫什么名字？", "你叫什么名字？"], ans: "你叫 what 名字？" },
-                { q: "Dịch câu 'Tôi không phải là giáo viên' sang tiếng Trung?", options: ["我是学生", "我... không phải là lǎoshī", "我不是老师", "我是老师吗"], ans: "我... không phải là lǎoshī" },
+                { q: "Để hỏi 'Bạn tên là gì?', ta nói câu nào?", options: ["你是谁？", "你好吗？", "你叫什么名字？", "你是老师吗？"], ans: "你叫什么名字？" },
+                { q: "Dịch câu 'Tôi không phải là giáo viên' sang tiếng Trung?", options: ["我是学生", "我不是老师", "我没老师", "我不老师"], ans: "我不是老师" },
                 { q: "Trợ từ nghi vấn đặt ở cuối câu để tạo câu hỏi Có/Không là từ nào?", options: ["吗", "呢", "吧", "的"], ans: "吗" }
             ]
         },
@@ -81,11 +81,11 @@ window.hskCurriculumData = {
             title: "Bài 4: 她是我的汉语老师 - Cô ấy là giáo viên tiếng Trung của tôi",
             desc: "Giới thiệu về người khác, hỏi quốc tịch và nói về mối quan hệ.",
             dialogue: [
-                { role: "A", zh: "她是谁？", pinyin: "Tā : shì shéi?", vi: "Cô ấy là ai vậy?" },
-                { role: "B", zh: "她是我的汉语老师，她叫李月。", pinyin: "Tā : shì wǒ de Hànyǔ lǎoshī, tā jiào Lǐ Yuè.", vi: "Cô ấy là giáo viên tiếng Trung của tôi, cô ấy tên là Lý Nguyệt." },
-                { role: "A", zh: "你是哪国人？", pinyin: "Nǐ : shì nǎ guó rén?", vi: "Bạn là người nước nào?" },
-                { role: "B", zh: "我是美国人。你呢？", pinyin: "Wǒ : shì Měiguó rén. Nǐ ne?", vi: "Tôi là người Mỹ. Còn bạn thì sao?" },
-                { role: "A", zh: "我是中国人。", pinyin: "Wǒ : shì Zhōngguó rén.", vi: "Tôi là người Trung Quốc." }
+                { role: "A", zh: "她是谁？", pinyin: "Tā shì shéi?", vi: "Cô ấy là ai vậy?" },
+                { role: "B", zh: "她是我的汉语老师，她叫李月。", pinyin: "Tā shì wǒ de Hànyǔ lǎoshī, tā jiào Lǐ Yuè.", vi: "Cô ấy là giáo viên tiếng Trung của tôi, cô ấy tên là Lý Nguyệt." },
+                { role: "A", zh: "你是哪国人？", pinyin: "Nǐ shì nǎ guó rén?", vi: "Bạn là người nước nào?" },
+                { role: "B", zh: "我是美国人。你呢？", pinyin: "Wǒ shì Měiguó rén. Nǐ ne?", vi: "Tôi là người Mỹ. Còn bạn thì sao?" },
+                { role: "A", zh: "我是中国人。", pinyin: "Wǒ shì Zhōngguó rén.", vi: "Tôi là người Trung Quốc." }
             ],
             vocab: [
                 { id: "cur1_4_1", word: "她", pinyin: "tā", meaning: "cô ấy, bà ấy, chị ấy", pos: "other", tip: "Bộ Nữ 女 đứng trước đại diện cho phái nữ." },
@@ -94,10 +94,10 @@ window.hskCurriculumData = {
                 { id: "cur1_4_4", word: "哪", pinyin: "nǎ", meaning: "nào, cái nào", pos: "other", tip: "Có bộ Khẩu 口 đằng trước để hỏi." },
                 { id: "cur1_4_5", word: "国", pinyin: "guó", meaning: "nước, quốc gia", pos: "n", tip: "Bộ Vi 囗 bao quanh chữ Ngọc 玉." }
             ],
-            grammar: "1. Hỏi người '谁': Dùng hỏi 'Ai' (Ví dụ: 她是谁？).\n2. Hỏi quốc tịch: Sử dụng cấu trúc 'Subject + 是 + 哪国人？'.\n3. Trợ từ '呢': Dùng để hỏi lại câu hỏi trước đó cho đối tượng mới (Ví dụ: 你ne？).",
+            grammar: "1. Hỏi người '谁': Dùng hỏi 'Ai' (Ví dụ: 她是谁？).\n2. Hỏi quốc tịch: Sử dụng cấu trúc 'Subject + 是 + 哪国人？'.\n3. Trợ từ '呢': Dùng để hỏi lại câu hỏi trước đó cho đối tượng mới (Ví dụ: 你呢？).",
             quiz: [
                 { q: "Câu 'Bạn là người nước nào?' dịch sang tiếng Trung là gì?", options: ["你是谁？", "你是哪国人？", "你叫什么名字？", "你是中国人吗？"], ans: "你是哪国人？" },
-                { q: "Đại từ nhân xưng 'Cô ấy/Bà ấy' trong tiếng Trung dùng chữ nào?", options: ["他", "她", "你", "我"], ans: " she " }
+                { q: "Đại từ nhân xưng 'Cô ấy/Bà ấy' trong tiếng Trung dùng chữ nào?", options: ["他", "她", "你", "我"], ans: "她" }
             ]
         },
         {
@@ -107,8 +107,8 @@ window.hskCurriculumData = {
             dialogue: [
                 { role: "A", zh: "你家有几口人？", pinyin: "Nǐ jiā yǒu jǐ kǒu rén?", vi: "Nhà bạn có mấy người?" },
                 { role: "B", zh: "我家有三口人。", pinyin: "Wǒ jiā yǒu sān kǒu rén.", vi: "Nhà tôi có ba người." },
-                { role: "A", zh: "你女儿今年几岁了？", pinyin: "Nǐ nǚ'ér : jīnnián jǐ suì le?", vi: "Con gái bạn năm nay mấy tuổi rồi?" },
-                { role: "B", zh: "她今年四岁了。", pinyin: "Tā : jīnnián sì suì le.", vi: "Con bé năm nay bốn tuổi rồi." }
+                { role: "A", zh: "你女儿今年几岁了？", pinyin: "Nǐ nǚ'ér jīnnián jǐ suì le?", vi: "Con gái bạn năm nay mấy tuổi rồi?" },
+                { role: "B", zh: "她今年四岁了。", pinyin: "Tā jīnnián sì suì le.", vi: "Con bé năm nay bốn tuổi rồi." }
             ],
             vocab: [
                 { id: "cur1_5_1", word: "家", pinyin: "jiā", meaning: "nhà, gia đình", pos: "n", tip: "Mái nhà (bộ Miên 宀) nuôi heo (bộ Thỉ 豕) bên dưới." },
@@ -119,7 +119,7 @@ window.hskCurriculumData = {
             grammar: "1. Hỏi số lượng với '几': Sử dụng khi ước tính số lượng nhỏ hơn 10.\n2. Hỏi tuổi tác cho trẻ em (<10 tuổi): Dùng '几岁' (Ví dụ: 你女儿几岁了？).\n3. Trợ từ '了' cuối câu: Biểu thị sự thay đổi trạng thái.",
             quiz: [
                 { q: "Lượng từ nào dùng để đếm số người trong gia đình?", options: ["个", "本", "口", "张"], ans: "口" },
-                { q: "Để hỏi tuổi cho trẻ em dưới 10 tuổi, ta dùng cụm từ nào?", options: ["多大", "几岁", "什么sự", "多少岁"], ans: "几岁" }
+                { q: "Để hỏi tuổi cho trẻ em dưới 10 tuổi, ta dùng cụm từ nào?", options: ["多大", "几岁", "什么", "多少岁"], ans: "几岁" }
             ]
         },
         {
@@ -196,7 +196,7 @@ window.hskCurriculumData = {
                 { role: "A", zh: "小猫在哪儿？", pinyin: "Xiǎomāo zài nǎr?", vi: "Con mèo nhỏ ở đâu thế?" },
                 { role: "B", zh: "小猫在那儿。", pinyin: "Xiǎomāo zài nàr.", vi: "Mèo nhỏ ở đằng kia." },
                 { role: "A", zh: "你儿子在哪儿工作？", pinyin: "Nǐ érzi zài nǎr gōngzuò?", vi: "Con trai bạn làm việc ở đâu?" },
-                { role: "B", zh: "我儿子在医院工作，他是医生。", pinyin: "Wǒ érzi zài yīyuàn gōngzuò, tā : shì yīshēng.", vi: "Con trai tôi làm việc ở bệnh viện, nó là bác sĩ." }
+                { role: "B", zh: "我儿子在医院工作，他是医生。", pinyin: "Wǒ érzi zài yīyuàn gōngzuò, tā shì yīshēng.", vi: "Con trai tôi làm việc ở bệnh viện, nó là bác sĩ." }
             ],
             vocab: [
                 { id: "cur1_9_1", word: "小", pinyin: "xiǎo", meaning: "nhỏ, bé", pos: "adj", tip: "Ngược nghĩa với 大 (to lớn)." },
@@ -228,7 +228,7 @@ window.hskCurriculumData = {
             ],
             grammar: "1. Câu tồn tại với '有': 'Địa điểm + 有 + Vật thể'.\n2. Động từ năng nguyện '能': Biểu thị khả năng hoặc xin phép làm việc gì đó.\n3. Câu cầu khiến lịch sự '请': Thường kết hợp '请 + Động từ'.",
             quiz: [
-                { q: "Từ nào dùng để nối hai danh từ song hành có nghĩa là 'Và'?", options: ["也", "和", "được", "đều"], ans: "和" },
+                { q: "Từ nào dùng để nối hai danh từ song hành có nghĩa là 'Và'?", options: ["也", "和", "都", "得"], ans: "和" },
                 { q: "Để mời ai đó ngồi một cách lịch sự, ta nói gì?", options: ["请坐", "请问", "谢谢", "再见"], ans: "请坐" }
             ]
         },
@@ -243,14 +243,14 @@ window.hskCurriculumData = {
                 { role: "B", zh: "十二点吃饭。", pinyin: "Shí'er diǎn chīfàn.", vi: "Mười hai giờ ăn cơm." }
             ],
             vocab: [
-                { id: "cur1_11_1", word: "现zài", pinyin: "xiànzài", meaning: "bây giờ, hiện tại", pos: "other", tip: "Hiện (现) kết hợp Tại (在)." },
+                { id: "cur1_11_1", word: "现在", pinyin: "xiànzài", meaning: "bây giờ, hiện tại", pos: "other", tip: "Hiện (现) kết hợp Tại (在)." },
                 { id: "cur1_11_2", word: "点", pinyin: "diǎn", meaning: "giờ (mốc thời gian)", pos: "n", tip: "Dùng để nói về giờ chẵn." },
                 { id: "cur1_11_3", word: "分", pinyin: "fēn", meaning: "phút", pos: "n", tip: "Dùng để nói về phút lẻ." },
                 { id: "cur1_11_4", word: "吃饭", pinyin: "chīfàn", meaning: "ăn cơm", pos: "v", tip: "Cụm động từ chỉ hoạt động ăn cơm." }
             ],
             grammar: "1. Hỏi giờ: '现在几点？'.\n2. Nói giờ phút: 'Số + 点 + Số + 分'.\n3. Trạng ngữ thời gian: Đứng trước động từ vị ngữ chính (Ví dụ: 我十二点吃饭).",
             quiz: [
-                { q: "Cụm từ nghi vấn dùng để hỏi thời gian 'Khi nào/Bao giờ' là gì?", options: ["在哪儿", "为什么", "什么时候", "几sự"], ans: "什么时候" },
+                { q: "Cụm từ nghi vấn dùng để hỏi thời gian 'Khi nào/Bao giờ' là gì?", options: ["在哪儿", "为什么", "什么时候", "几个"], ans: "什么时候" },
                 { q: "Nói mốc thời gian '10 giờ 10 phút' như thế nào?", options: ["十点十分", "十分十点", "十点几分", "现在十点"], ans: "十点十分" }
             ]
         },
@@ -272,7 +272,7 @@ window.hskCurriculumData = {
             ],
             grammar: "1. Hỏi tình trạng '怎么样': Dùng hỏi về thời tiết, sức khỏe.\n2. Cấu trúc cảm thán '太 + Adj + 了': Biểu đạt mức độ cao.\n3. Động từ '会' chỉ khả năng xảy ra của sự việc tự nhiên trong tương lai.",
             quiz: [
-                { q: "Cấu trúc dùng để cảm thán '...quá... rồi' là gì?", options: ["很...了", "太...了", "最...了", "不...了"], ans: "太...le" },
+                { q: "Cấu trúc dùng để cảm thán '...quá... rồi' là gì?", options: ["很...了", "太...了", "最...了", "不...了"], ans: "太...了" },
                 { q: "Từ nào có nghĩa là 'mưa'?", options: ["下雨", "天气", "怎么样", "冷"], ans: "下雨" }
             ]
         },
@@ -292,9 +292,9 @@ window.hskCurriculumData = {
                 { id: "cur1_13_3", word: "看书", pinyin: "kànshū", meaning: "đọc sách", pos: "v", tip: "Khán (看 - nhìn) kết hợp Thư (书 - sách)." },
                 { id: "cur1_13_4", word: "学", pinyin: "xué", meaning: "học, học tập", pos: "v", tip: "Đứa trẻ (bộ Tử 子) học chữ bên dưới mái trường." }
             ],
-            grammar: "1. Biểu thị hành động tiếp diễn '在...呢': Cấu trúc 'S + 在 + Động từ + (Tân ngữ) + 呢'.\n2. Phủ định hành động tiếp diễn: Dùng từ '没' hoặc 'Hello', đồng thời loại bỏ trợ từ '呢'.",
+            grammar: "1. Biểu thị hành động tiếp diễn '在...呢': Cấu trúc 'S + 在 + Động từ + (Tân ngữ) + 呢'.\n2. Phủ định hành động tiếp diễn: Dùng từ '没' hoặc '没有', đồng thời loại bỏ trợ từ '呢'.",
             quiz: [
-                { q: "Cấu trúc nào biểu thị hành động đang diễn ra tại thời điểm nói?", options: ["想...了", "太...了", "在...呢", "会...吗"], ans: "在...ne" },
+                { q: "Cấu trúc nào biểu thị hành động đang diễn ra tại thời điểm nói?", options: ["想...了", "太...了", "在...呢", "会...吗"], ans: "在...呢" },
                 { q: "Dịch cụm từ '看书' sang tiếng Việt?", options: ["Học tập", "Nấu ăn", "Đọc sách", "Xem phim"], ans: "Đọc sách" }
             ]
         },
@@ -325,10 +325,10 @@ window.hskCurriculumData = {
             title: "Bài 15: 我是坐飞机来的 - Tôi đến bằng máy bay",
             desc: "Nhấn mạnh về thời gian, địa điểm hoặc phương thức của một hành động đã xảy ra.",
             dialogue: [
-                { role: "A", zh: "你和李小姐是什么时候认识的？", pinyin: "Nǐ hé Lǐ xiǎojiě :  shì shénme shíhou rènshi de?", vi: "Bạn và cô Lý quen nhau từ bao giờ?" },
-                { role: "B", zh: "我们是2011年9月认识 của chúng tôi.", pinyin: "Wǒmen :  shì èr líng yī yī nián jiǔyuè rènshi de.", vi: "Chúng tôi quen nhau vào tháng 9 năm 2011." },
-                { role: "A", zh: "你们是怎么来饭店的？", pinyin: "Nǐmen :  shì zěnme lái fàndiàn de?", vi: "Các bạn đến nhà hàng bằng phương tiện gì?" },
-                { role: "B", zh: "我们是坐出租车来的。", pinyin: "Wǒmen :  shì zuò chūzūchē lái de.", vi: "Chúng tôi đến bằng xe taxi." }
+                { role: "A", zh: "你和李小姐是什么时候认识的？", pinyin: "Nǐ hé Lǐ xiǎojiě shì shénme shíhou rènshi de?", vi: "Bạn và cô Lý quen nhau từ bao giờ?" },
+                { role: "B", zh: "我们是2011年9月认识的。", pinyin: "Wǒmen shì 2011 nián 9 yuè rènshi de.", vi: "Chúng tôi quen nhau vào tháng 9 năm 2011." },
+                { role: "A", zh: "你们是怎么来饭店的？", pinyin: "Nǐmen shì zěnme lái fàndiàn de?", vi: "Các bạn đến nhà hàng bằng phương tiện gì?" },
+                { role: "B", zh: "我们是坐出租车来的。", pinyin: "Wǒmen shì zuò chūzūchē lái de.", vi: "Chúng tôi đến bằng xe taxi." }
             ],
             vocab: [
                 { id: "cur1_15_1", word: "认识", pinyin: "rènshi", meaning: "quen biết, nhận biết", pos: "v", tip: "Nhận (认) kết hợp Thức (识)." },
@@ -336,9 +336,9 @@ window.hskCurriculumData = {
                 { id: "cur1_15_3", word: "飞机", pinyin: "fēijī", meaning: "máy bay", pos: "n", tip: "Phi (飞 - bay) kết hợp Cơ (机 - máy móc)." },
                 { id: "cur1_15_4", word: "出租车", pinyin: "chūzūchē", meaning: "xe taxi", pos: "n", tip: "Xe cho thuê có người lái phục vụ hành khách." }
             ],
-            grammar: "1. Cấu trúc nhấn mạnh '是... de': Dùng nhấn mạnh thời gian, địa điểm hoặc phương thức hành động đã hoàn tất trong quá khứ.\n2. Cách đọc năm: Đọc từng chữ số đơn lẻ kèm theo từ '年' phía sau.",
+            grammar: "1. Cấu trúc nhấn mạnh '是... 的': Dùng nhấn mạnh thời gian, địa điểm hoặc phương thức hành động đã hoàn tất trong quá khứ.\n2. Cách đọc năm: Đọc từng chữ số đơn lẻ kèm theo từ '年' phía sau.",
             quiz: [
-                { q: "Để hỏi về phương thức di chuyển 'Bạn đến đây bằng cách nào?', ta nói câu nào?", options: ["你是sự？", "你什么时候来？", "你是怎么来的？", "你在哪儿？"], ans: "你是怎么来的？" },
+                { q: "Để hỏi về phương thức di chuyển 'Bạn đến đây bằng cách nào?', ta nói câu nào?", options: ["你是谁？", "你什么时候来？", "你是怎么来的？", "你在哪儿？"], ans: "你是怎么来的？" },
                 { q: "Từ nào có nghĩa là 'Xe Taxi'?", options: ["飞机", "出租车", "椅子", "商店"], ans: "出租车" }
             ]
         }
@@ -352,7 +352,7 @@ window.hskCurriculumData = {
                 { role: "A", zh: "你觉得什么时候去北京旅游最好？", pinyin: "Nǐ juéde shénme shíhou qù Běijīng lǚyóu zuì hǎo?", vi: "Bạn thấy đi du lịch Bắc Kinh lúc nào là tốt nhất?" },
                 { role: "B", zh: "九月去北京旅游最好。", pinyin: "Jiǔyuè qù Běijīng lǚyóu zuì hǎo.", vi: "Tháng Chín đi du lịch Bắc Kinh là tốt nhất." },
                 { role: "A", zh: "为什么？", pinyin: "Wèishénme?", vi: "Tại sao vậy?" },
-                { role: "B", zh: "因为九月的北京天气不冷 cũng không nóng.", pinyin: "Yīnwèi jiǔyuè de Běijīng tiānqì bù lěng yě bú rè.", vi: "Bởi vì thời tiết Bắc Kinh tháng Chín không lạnh cũng không nóng." }
+                { role: "B", zh: "因为九月的北京天气不冷也不热。", pinyin: "Yīnwèi jiǔyuè de Běijīng tiānqì bù lěng yě bú rè.", vi: "Bởi vì thời tiết Bắc Kinh tháng Chín không lạnh cũng không nóng." }
             ],
             vocab: [
                 { id: "cur2_1_1", word: "旅游", pinyin: "lǚyóu", meaning: "du lịch, đi chơi", pos: "v", tip: "Đi chơi xa thưởng ngoạn, lữ (旅) kết hợp du (游)." },
@@ -364,7 +364,7 @@ window.hskCurriculumData = {
             grammar: "1. Phó từ chỉ mức độ '最': Đứng trước tính từ hoặc động từ tâm lý biểu thị vị trí số một (Ví dụ: 最好 - tốt nhất, 最喜欢 - thích nhất).\n2. Cặp liên từ chỉ nguyên nhân - kết quả: '因为... (bởi vì)... 所以... (cho nên...)'.\n3. Biểu đạt sự trung hòa: '不... 也不...' (Không... cũng không...) chỉ trạng thái ôn hòa vừa phải.",
             quiz: [
                 { q: "Trong tiếng Trung, phó từ so sánh nhất 'Nhất' là từ nào?", options: ["很", "太", "最", "真"], ans: "最" },
-                { q: "Cặp liên từ chỉ quan hệ nhân quả là cặp từ nào?", options: ["虽然...đặc biệt...", "因为...所以...", "不但...而且...", "如果...就..."], ans: "因为...所以..." },
+                { q: "Cặp liên từ chỉ quan hệ nhân quả là cặp từ nào?", options: ["虽然...但是...", "因为...所以...", "不但...而且...", "如果...就..."], ans: "因为...所以..." },
                 { q: "Dịch nghĩa của từ '觉得'?", options: ["Cảm thấy / Nghĩ rằng", "Nhìn thấy", "Nghe thấy", "Biết được"], ans: "Cảm thấy / Nghĩ rằng" }
             ]
         },
@@ -396,10 +396,10 @@ window.hskCurriculumData = {
             title: "Bài 3: 左边那个红色的是我的 - Cái màu đỏ bên trái là của tôi",
             desc: "Học cách xác định vị trí phương hướng, màu sắc và cấu trúc sở hữu tỉnh lược.",
             dialogue: [
-                { role: "A", zh: "哪个杯子是你的？", pinyin: "Nǎge bēizi :  shì nǐ de?", vi: "Chiếc ly nào là của bạn vậy?" },
-                { role: "B", zh: "左边那个红色的是我的。", pinyin: "Zuǒbian nàge hóngsè de :  shì wǒ de.", vi: "Cái màu đỏ bên trái kia là của tôi đấy." },
+                { role: "A", zh: "哪个杯子是你的？", pinyin: "Nǎge bēizi shì nǐ de?", vi: "Chiếc ly nào là của bạn vậy?" },
+                { role: "B", zh: "左边那个红色的是我的。", pinyin: "Zuǒbian nàge hóngsè de shì wǒ de.", vi: "Cái màu đỏ bên trái kia là của tôi đấy." },
                 { role: "A", zh: "这个呢？", pinyin: "Zhège ne?", vi: "Còn cái này thì sao?" },
-                { role: "B", zh: "这个是我姐姐给我的。", pinyin: "Zhège :  shì wǒ jiějie gěi wǒ de.", vi: "Cái này là do chị gái tặng cho tôi." }
+                { role: "B", zh: "这个是我姐姐给我的。", pinyin: "Zhège shì wǒ jiějie gěi wǒ de.", vi: "Cái này là do chị gái tặng cho tôi." }
             ],
             vocab: [
                 { id: "cur2_3_1", word: "左边", pinyin: "zuǒbian", meaning: "bên trái", pos: "other", tip: "Từ chỉ phương vị bên tay trái, ngược nghĩa với 右边." },
@@ -407,7 +407,7 @@ window.hskCurriculumData = {
                 { id: "cur2_3_3", word: "姐姐", pinyin: "jiějie", meaning: "chị gái", pos: "n", tip: "Hai chữ giống nhau ghép lại, có bộ Nữ 女 đứng đầu." },
                 { id: "cur2_3_4", word: "给", pinyin: "gěi", meaning: "cho, tặng", pos: "v", tip: "Đưa vật phẩm hoặc thực hiện hành động chuyển giao." }
             ],
-            grammar: "1. Cấu trúc chữ '的' rút gọn danh từ: Khi danh từ trung tâm đã được đề cập rõ (ở đây là '杯子'), ta có thể bỏ danh từ đó và chỉ giữ lại '红色 de / 我的' để câu nói ngắn gọn.\n2. Giới từ '给': Cấu trúc 'A + 给 + B + Động từ' (A làm việc gì đó cho B).",
+            grammar: "1. Cấu trúc chữ '的' rút gọn danh từ: Khi danh từ trung tâm đã được đề cập rõ (ở đây là '杯子'), ta có thể bỏ danh từ đó và chỉ giữ lại '红色 的 / 我的' để câu nói ngắn gọn.\n2. Giới từ '给': Cấu trúc 'A + 给 + B + Động từ' (A làm việc gì đó cho B).",
             quiz: [
                 { q: "Từ phương vị chỉ 'Bên trái' là từ nào?", options: ["右边", "左边", "旁边", "下面"], ans: "左边" },
                 { q: "Chữ '的' trong câu '红色的是我的' dùng để làm gì?", options: ["Hỏi thăm", "Cảm thán", "Rút gọn danh từ đã biết phía trước", "Phủ định"], ans: "Rút gọn danh từ đã biết phía trước" },
@@ -416,24 +416,24 @@ window.hskCurriculumData = {
         },
         {
             lessonId: 4,
-            title: "Bài 4: 这个工作是他帮 tôi giới thiệu de - Công việc này là do anh ấy giới thiệu cho tôi",
+            title: "Bài 4: 这个工作是他帮我介绍的 - Công việc này là do anh ấy giới thiệu cho tôi",
             desc: "Cách nói về việc giới thiệu công việc, xin sự trợ giúp và dùng cấu trúc nhấn mạnh.",
             dialogue: [
                 { role: "A", zh: "你在哪儿工作？", pinyin: "Nǐ zài nǎr gōngzuò?", vi: "Bạn đang làm việc ở đâu vậy?" },
                 { role: "B", zh: "我在一个商店工作。", pinyin: "Wǒ zài yí gè shāngdiàn gōngzuò.", vi: "Tôi làm việc tại một cửa hàng." },
                 { role: "A", zh: "这个工作怎么样？", pinyin: "Zhège gōngzuò zěnmeyàng?", vi: "Công việc này thế nào?" },
-                { role: "B", zh: "很好。这个工作是他帮 tôi giới thiệu de。", pinyin: "Hěn hǎo. Zhège gōngzuò :  shì tā bāng wǒ jièshào de.", vi: "Rất tốt. Công việc này là do anh ấy giới thiệu cho tôi đấy." }
+                { role: "B", zh: "很好。这个工作是他帮我介绍的。", pinyin: "Hěn hǎo. Zhège gōngzuò shì tā bāng wǒ jièshào de.", vi: "Rất tốt. Công việc này là do anh ấy giới thiệu cho tôi đấy." }
             ],
             vocab: [
                 { id: "cur2_4_1", word: "介绍", pinyin: "jièshào", meaning: "giới thiệu", pos: "v", tip: "Giới (介) kết hợp Thiệu (绍) nhằm làm cầu nối thông tin." },
                 { id: "cur2_4_2", word: "帮", pinyin: "bāng", meaning: "giúp, giúp đỡ", pos: "v", tip: "Hỗ trợ người khác hoàn thành hành động." },
                 { id: "cur2_4_3", word: "新", pinyin: "xīn", meaning: "mới", pos: "adj", tip: "Đối lập hoàn toàn với Cựu/Cổ (旧 - cũ)." }
             ],
-            grammar: "1. Nhấn mạnh tác giả/phương thức bằng cấu trúc '是... de': Dùng nhấn mạnh đối tượng thực hiện hành động trong quá khứ (Ví dụ: 是他帮我介绍的 - là do anh ấy giới thiệu).\n2. Giới từ '帮': Diễn tả việc giúp đỡ ai đó làm việc gì (S + 帮 + O + Động từ).",
+            grammar: "1. Nhấn mạnh tác giả/phương thức bằng cấu trúc '是... 的': Dùng nhấn mạnh đối tượng thực hiện hành động trong quá khứ (Ví dụ: 是他帮我介绍的 - là do anh ấy giới thiệu).\n2. Giới từ '帮': Diễn tả việc giúp đỡ ai đó làm việc gì (S + 帮 + O + Động từ).",
             quiz: [
                 { q: "Từ nào có nghĩa là 'Giới thiệu'?", options: ["工作", "学习", "介绍", "觉得"], ans: "介绍" },
                 { q: "Cấu trúc 'S + 是 + [Ai đó] + Động từ + 的' dùng để làm gì?", options: ["Hỏi ý kiến", "Nhấn mạnh đối tượng thực hiện hành động", "Cảm thán thời tiết", "Phủ định khả năng"], ans: "Nhấn mạnh đối tượng thực hiện hành động" },
-                { q: "Dịch câu 'Anh ấy giúp tôi học tiếng Trung'?", options: ["他帮我学习汉语", "他介绍我学习汉语", "他觉得 học tập Hà ngữ hảo", "我帮他学习汉语"], ans: "他帮 wǒ học tập Hà ngữ" }
+                { q: "Dịch câu 'Anh ấy giúp tôi học tiếng Trung'?", options: ["他帮我学习汉语", "他给我介绍汉语", "他觉得汉语好", "我帮他学习汉语"], ans: "他帮我学习汉语" }
             ]
         },
         {
@@ -441,8 +441,8 @@ window.hskCurriculumData = {
             title: "Bài 5: 送你一只猫 - Tặng bạn một con mèo",
             desc: "Nói về sở thích nuôi thú cưng, các hoạt động thể thao ngoài trời.",
             dialogue: [
-                { role: "A", zh: "这是你买的猫吗？", pinyin: "Zhè :  shì nǐ mǎi de māo ma?", vi: "Đây là con mèo bạn mới mua phải không?" },
-                { role: "B", zh: "不是，这是我朋友送我的。", pinyin: "Bú :  shì, zhè :  shì wǒ péngyou sòng wǒ de.", vi: "Không phải, cái này là do bạn tôi tặng đấy." },
+                { role: "A", zh: "这是你买的猫吗？", pinyin: "Zhè shì nǐ mǎi de māo ma?", vi: "Đây là con mèo bạn mới mua phải không?" },
+                { role: "B", zh: "不是，这是我朋友送我的。", pinyin: "Bú shì, zhè shì wǒ péngyou sòng wǒ de.", vi: "Không phải, cái này là do bạn tôi tặng đấy." },
                 { role: "A", zh: "你会踢足球吗？", pinyin: "Nǐ huì tī zúqiú ma?", vi: "Bạn biết đá bóng không?" },
                 { role: "B", zh: "我会踢。我们下午去踢球吧。", pinyin: "Wǒ huì tī. Wǒmen xiàwǔ qù tīqiú ba.", vi: "Tôi biết đá chứ. Chiều nay chúng ta đi đá bóng đi." }
             ],
@@ -487,8 +487,8 @@ window.hskCurriculumData = {
             desc: "Hỏi han và biểu đạt cự ly, khoảng cách giữa các địa điểm, phương tiện giao thông.",
             dialogue: [
                 { role: "A", zh: "你家离公司远吗？", pinyin: "Nǐ jiā lí gōngsī yuǎn ma?", vi: "Nhà bạn cách công ty xa không?" },
-                { role: "B", zh: "不远，很近。坐地铁十五分钟就 do 。", pinyin: "Bù yuǎn, hěn jìn. Zuò dìtiě shíwǔ fēnzhōng jiù dào.", vi: "Không xa, rất gần. Đi tàu điện ngầm chỉ mười lăm phút là tới." },
-                { role: "A", zh: "你每天怎么去 công ty ？", pinyin: "Nǐ měitiān zěnme qù gōngsī?", vi: "Mỗi ngày bạn đi làm bằng cách nào?" },
+                { role: "B", zh: "不远，很近。坐地铁十五分钟就到。", pinyin: "Bù yuǎn, hěn jìn. Zuò dìtiě shíwǔ fēnzhōng jiù dào.", vi: "Không xa, rất gần. Đi tàu điện ngầm chỉ mười lăm phút là tới." },
+                { role: "A", zh: "你每天怎么去公司？", pinyin: "Nǐ měitiān zěnme qù gōngsī?", vi: "Mỗi ngày bạn đi làm bằng cách nào?" },
                 { role: "B", zh: "我有时候坐公共汽车，有时候坐地铁。", pinyin: "Wǒ yǒushíhou zuò gōnggòng qìchē, yǒushíhou zuò dìtiě.", vi: "Tôi lúc thì đi xe buýt, lúc thì đi tàu điện ngầm." }
             ],
             vocab: [
@@ -512,7 +512,7 @@ window.hskCurriculumData = {
             dialogue: [
                 { role: "A", zh: "晚上我们一起去吃饭，怎么样？", pinyin: "Wǎnshang wǒmen yìqǐ qù chīfàn, zěnmeyàng?", vi: "Tối nay chúng ta cùng nhau đi ăn cơm nhé, thế nào?" },
                 { role: "B", zh: "让我想想再告诉你。", pinyin: "Ràng wǒ xiǎngxiang zài gàosu nǐ.", vi: "Để tôi suy nghĩ một chút rồi nói cho bạn biết sau nhé." },
-                { role: "A", zh: "这件事是谁让你做的？", pinyin: "Zhè jiàn shì :  shì shéi ràng nǐ zuò de?", vi: "Chuyện này là do ai bảo bạn làm vậy?" },
+                { role: "A", zh: "这件事是谁让你做的？", pinyin: "Zhè jiàn shì shì shéi ràng nǐ zuò de?", vi: "Chuyện này là do ai bảo bạn làm vậy?" },
                 { role: "B", zh: "是经理让我做的。", pinyin: "Shì jīnglǐ ràng wǒ zuò de.", vi: "Là do Giám đốc bảo tôi làm đấy." }
             ],
             vocab: [
@@ -524,7 +524,7 @@ window.hskCurriculumData = {
             grammar: "1. Câu kiêm ngữ với động từ '让': Cấu trúc 'Chủ ngữ 1 + 让 + Tân ngữ (đồng thời là Chủ ngữ 2) + Động từ 2'. Thể hiện sự sai bảo, yêu cầu ai làm gì.\n2. Lặp lại động từ để giảm nhẹ ngữ khí '想想': Diễn tả hành động thử, làm nhẹ nhàng, ngắn ngủi.",
             quiz: [
                 { q: "Động từ sai khiến nào có nghĩa là 'Cho phép/Bảo' ai làm việc gì?", options: ["要", "会", "让", "给"], ans: "让" },
-                { q: "Dịch câu 'Để tôi suy nghĩ một chút'?", options: ["让我想想", "让我看看", "让我听听", "让我做做"], ans: "ràng wǒ xiǎngxiang" },
+                { q: "Dịch câu 'Để tôi suy nghĩ một chút'?", options: ["让我想想", "让我看看", "让我听听", "让我做做"], ans: "让我想想" },
                 { q: "Lượng từ dùng riêng cho từ '事情' (sự việc) là lượng từ nào?", options: ["本", "件", "张", "口"], ans: "件" }
             ]
         },
@@ -535,7 +535,7 @@ window.hskCurriculumData = {
             dialogue: [
                 { role: "A", zh: "今天的考试怎么样？你做完了吗？", pinyin: "Jīntiān de kǎoshì zěnmeyàng? Nǐ zuò wán le ma?", vi: "Bài thi hôm nay thế nào? Bạn đã làm xong chưa?" },
                 { role: "B", zh: "题太多，我没做完。", pinyin: "Tí tài duō, wǒ méi zuò wán.", vi: "Đề bài nhiều quá, tôi làm chưa xong." },
-                { role: "A", zh: "你听懂了老师说的话 ma ？", pinyin: "Nǐ tīng dǒng le lǎoshī shuō de huà ma?", vi: "Bạn có nghe hiểu những lời thầy giáo nói không?" },
+                { role: "A", zh: "你听懂了老师说的话吗？", pinyin: "Nǐ tīng dǒng le lǎoshī shuō de huà ma?", vi: "Bạn có nghe hiểu những lời thầy giáo nói không?" },
                 { role: "B", zh: "我都听懂了。", pinyin: "Wǒ dōu tīng dǒng le.", vi: "Tôi đều nghe hiểu hết rồi." }
             ],
             vocab: [
@@ -562,13 +562,13 @@ window.hskCurriculumData = {
             ],
             vocab: [
                 { id: "cur2_10_1", word: "别...了", pinyin: "bié...le", meaning: "đừng... nữa", pos: "other", tip: "Cấu trúc khuyên ngăn hành động đang tiếp diễn." },
-                { id: "cur2_10_2", word: "报纸", pinyin: "bài zhǐ", meaning: "tờ báo, báo chí", pos: "n", tip: "Báo (报) kết hợp Chỉ (纸 - giấy tờ)." },
+                { id: "cur2_10_2", word: "报纸", pinyin: "bàozhǐ", meaning: "tờ báo, báo chí", pos: "n", tip: "Báo (报) kết hợp Chỉ (纸 - giấy tờ)." },
                 { id: "cur2_10_3", word: "放", pinyin: "fàng", meaning: "đặt, để", pos: "v", tip: "Đặt để vật dụng ở một vị trí cố định." },
                 { id: "cur2_10_4", word: "着", pinyin: "zhe", meaning: "đang đặt, đang mang (trợ từ)", pos: "p", tip: "Đặt ngay sau động từ chỉ trạng thái của vật." }
             ],
             grammar: "1. Câu khuyên cản '别 + V + 了': 'Đừng làm việc gì đó nữa' biểu đạt sự ngăn cản nhẹ nhàng.\n2. Trợ từ động thái '着': Biểu thị trạng thái của hành động đang được duy trì (Động từ + 着).\n3. Trợ từ ngữ khí '呢' cuối câu trần thuật: Nhấn mạnh sự khẳng định của sự thật hoặc thu hút chú ý.",
             quiz: [
-                { q: "Cấu trúc nào dùng để khuyên ngăn 'Đừng làm gì đó nữa'?", options: ["太...了", "别...了", "会...吗", "在...呢"], ans: "别...lơ" },
+                { q: "Cấu trúc nào dùng để khuyên ngăn 'Đừng làm gì đó nữa'?", options: ["太...了", "别...了", "会...吗", "在...呢"], ans: "别...了" },
                 { q: "Trợ từ động thái đứng ngay sau động từ chỉ trạng thái kéo dài là chữ nào?", options: ["了", "过", "着", "的"], ans: "着" },
                 { q: "Dịch nghĩa của từ '报纸'?", options: ["Tờ báo", "Cuốn sách", "Chiếc bàn", "Điện thoại"], ans: "Tờ báo" }
             ]
@@ -578,8 +578,8 @@ window.hskCurriculumData = {
             title: "Bài 11: 他比我大三岁 - Anh ấy lớn hơn tôi ba tuổi",
             desc: "Học cách thực hiện so sánh hơn, so sánh tuổi tác và kích thước.",
             dialogue: [
-                { role: "A", zh: "他今年多大？", pinyin: "Tā :  jīnnián duō dā?", vi: "Anh ấy năm nay bao nhiêu tuổi?" },
-                { role: "B", zh: "他二十三岁。他比我大三岁。", pinyin: "Tā :  èrshísān suì. Tā bǐ wǒ dà sān suì.", vi: "Anh ấy hai mươi ba tuổi. Anh ấy lớn hơn tôi ba tuổi." },
+                { role: "A", zh: "他今年多大？", pinyin: "Tā jīnnián duō dà?", vi: "Anh ấy năm nay bao nhiêu tuổi?" },
+                { role: "B", zh: "他二十三岁。他比我大三岁。", pinyin: "Tā èrshísān suì. Tā bǐ wǒ dà sān suì.", vi: "Anh ấy hai mươi ba tuổi. Anh ấy lớn hơn tôi ba tuổi." },
                 { role: "A", zh: "你和他谁高？", pinyin: "Nǐ hé tā shéi gāo?", vi: "Bạn và anh ấy ai cao hơn?" },
                 { role: "B", zh: "他比我高一点儿。", pinyin: "Tā bǐ wǒ gāo yìdiǎnr.", vi: "Anh ấy cao hơn tôi một chút." }
             ],
@@ -592,8 +592,8 @@ window.hskCurriculumData = {
             grammar: "1. Câu so sánh chữ '比': Cấu trúc cơ bản 'A + 比 + B + Tính từ' (A hơn B về mặt tính chất).\n2. So sánh kèm sai biệt cụ thể: 'A + 比 + B + Tính từ + Con số cụ thể / 一点儿' (Ví dụ: 他比我大三岁).",
             quiz: [
                 { q: "Giới từ dùng để tiến hành so sánh trong tiếng Trung là từ nào?", options: ["离", "在", "比", "给"], ans: "比" },
-                { q: "Dịch câu 'Anh ấy cao hơn tôi một chút'?", options: ["他比我高一点儿", "I bǐ tā gāo yìdiǎnr", "他 không có wǒ gāo", "他和我一样高"], ans: "他比 wǒ gāo một chút" },
-                { q: "Để hỏi tuổi tác cho một người trưởng thành một cách thông thường, ta dùng cụm từ nào?", options: ["几sự", "多大", "多少", "什么时候"], ans: "多大" }
+                { q: "Dịch câu 'Anh ấy cao hơn tôi một chút'?", options: ["他比我高一点儿", "他没有我高", "他比我大", "他和我一样高"], ans: "他比我高一点儿" },
+                { q: "Để hỏi tuổi tác cho một người trưởng thành một cách thông thường, ta dùng cụm từ nào?", options: ["几岁", "多大", "多少", "什么时候"], ans: "多大" }
             ]
         },
         {
@@ -612,10 +612,10 @@ window.hskCurriculumData = {
                 { id: "cur2_12_3", word: "少", pinyin: "shǎo", meaning: "ít", pos: "adj", tip: "Ngược nghĩa hoàn toàn với 多 (duō - nhiều)." },
                 { id: "cur2_12_4", word: "早", pinyin: "zǎo", meaning: "sớm", pos: "adj", tip: "Mặt trời (bộ Nhật 日) ló rạng trên ngọn cây." }
             ],
-            grammar: "1. Bổ ngữ trạng thái / bổ ngữ chỉ mức độ: Cấu trúc dùng để nhận xét đánh giá 'Động từ + 得 + Adj / Cụm Adj' (Ví dụ: 穿得太sau - mặc quá ít).\n2. Phó từ chỉ thời gian sớm '就': Biểu thị hành động xảy ra sớm, nhanh chóng (Ví dụ: 五点就起床 - 5 giờ đã dậy).",
+            grammar: "1. Bổ ngữ trạng thái / bổ ngữ chỉ mức độ: Cấu trúc dùng để nhận xét đánh giá 'Động từ + 得 + Adj / Cụm Adj' (Ví dụ: 穿得太少 - mặc quá ít).\n2. Phó từ chỉ thời gian sớm '就': Biểu thị hành động xảy ra sớm, nhanh chóng (Ví dụ: 五点就起床 - 5 giờ đã dậy).",
             quiz: [
                 { q: "Trợ từ dùng để nối động từ với bổ ngữ trạng thái nhận xét là chữ nào?", options: ["的", "地", "得", "了"], ans: "得" },
-                { q: "Ngược nghĩa với tính từ '早' (sớm) là tính từ nào?", options: ["慢", "晚 (muộn)", "矮", "多"], ans: "晚 (muộn)" },
+                { q: "Ngược nghĩa với tính từ '早' (sớm) là tính từ nào?", options: ["慢", "晚", "矮", "多"], ans: "晚" },
                 { q: "Dịch câu 'Tôi học rất tốt'?", options: ["我学习得很好", "我很好学习", "我学习很好得", "学习我得很好"], ans: "我学习得很好" }
             ]
         },
@@ -626,8 +626,8 @@ window.hskCurriculumData = {
             dialogue: [
                 { role: "A", zh: "请问，李经理在办公室吗？", pinyin: "Qǐngwèn, Lǐ jīnglǐ zài bàngōngshì ma?", vi: "Xin hỏi, Giám đốc Lý có ở văn phòng không?" },
                 { role: "B", zh: "在。门开着呢，你进去吧。", pinyin: "Zài. Mén kāi zhe ne, nǐ jìnqu ba.", vi: "Có ở đấy. Cửa đang mở kia kìa, bạn vào đi." },
-                { role: "A", zh: "那个穿着红色衣服的人是谁？", pinyin: "Nàge chuān zhe hóngsè yīfu de rén :  shì shéi?", vi: "Người đang mặc bộ quần áo màu đỏ kia là ai vậy?" },
-                { role: "B", zh: "他是我们的新同事。", pinyin: "Tā :  shì wǒmen de xīn tóngshì.", vi: "Anh ấy là đồng nghiệp mới của chúng tôi." }
+                { role: "A", zh: "那个穿着红色衣服的人是谁？", pinyin: "Nàge chuān zhe hóngsè yīfu de rén shì shéi?", vi: "Người đang mặc bộ quần áo màu đỏ kia là ai vậy?" },
+                { role: "B", zh: "他是我们的新同事。", pinyin: "Tā shì wǒmen de xīn tóngshì.", vi: "Anh ấy là đồng nghiệp mới của chúng tôi." }
             ],
             vocab: [
                 { id: "cur2_13_1", word: "门", pinyin: "mén", meaning: "cửa, cánh cửa", pos: "n", tip: "Hán tự mô phỏng hình dáng một cánh cổng mở." },
@@ -662,7 +662,7 @@ window.hskCurriculumData = {
             quiz: [
                 { q: "Trợ từ động thái biểu thị kinh nghiệm 'Đã từng làm gì' là chữ nào?", options: ["了", "着", "过", "的"], ans: "过" },
                 { q: "Từ phủ định của câu 'Tôi chưa từng xem qua' là câu nào?", options: ["我不看", "我没看过", "我不会看", "我不看过"], ans: "我没看过" },
-                { q: "Dịch nghĩa của từ 'Boss'?", options: ["Rất dở", "Thú vị / Hay / Có ý nghĩa", "Chán nản", "Không hiểu"], ans: "Thú vị / Hay / Có ý nghĩa" }
+                { q: "Dịch nghĩa của từ '意思'?", options: ["Rất dở", "Thú vị / Hay / Có ý nghĩa", "Chán nản", "Không hiểu"], ans: "Thú vị / Hay / Có ý nghĩa" }
             ]
         },
         {
@@ -686,7 +686,7 @@ window.hskCurriculumData = {
             quiz: [
                 { q: "Cấu trúc dùng để biểu đạt hành động sắp diễn ra 'Sắp... rồi' là cấu trúc nào?", options: ["太...了", "就要...了", "在...呢", "因为...所以..."], ans: "就要...了" },
                 { q: "Từ nào có nghĩa là 'Tàu hỏa'?", options: ["飞机", "出租车", "火车", "地铁"], ans: "火车" },
-                { q: "Dịch nghĩa của từ 'Ticket'?", options: ["Cái ghế", "Cửa hàng", "Cánh cửa", "Vé / Tờ phiếu"], ans: "Vé / Tờ phiếu" }
+                { q: "Dịch nghĩa của từ '票'?", options: ["Cái ghế", "Cửa hàng", "Cánh cửa", "Vé / Tờ phiếu"], ans: "Vé / Tờ phiếu" }
             ]
         }
     ],
@@ -698,7 +698,7 @@ window.hskCurriculumData = {
             dialogue: [
                 { role: "A", zh: "周末你有什么打算？", pinyin: "Zhōumò nǐ yǒu shénme dǎsuàn?", vi: "Cuối tuần này bạn có dự định gì chưa?" },
                 { role: "B", zh: "我早就打算好了，请你吃饭，看电影。", pinyin: "Wǒ zǎo jiù dǎsuàn hǎo le, qǐng nǐ chīfàn, kàn diànyǐng.", vi: "Tớ đã lên kế hoạch từ lâu rồi, mời cậu đi ăn và xem phim." },
-                { role: "A", zh: "真的 ma ？可是我有很多作业要做。", pinyin: "Zhēn de ma? Kěshì wǒ yǒu hěn duō zuòyè yào zuò.", vi: "Thật thế sao? Nhưng tớ có rất nhiều bài tập phải làm." },
+                { role: "A", zh: "真的吗？可是我有很多作业要做。", pinyin: "Zhēn de ma? Kěshì wǒ yǒu hěn duō zuòyè yào zuò.", vi: "Thật thế sao? Nhưng tớ có rất nhiều bài tập phải làm." },
                 { role: "B", zh: "别着急，明天再做吧。", pinyin: "Bié zháojí, míngtiān zài zuò ba.", vi: "Đừng lo lắng, mai rồi làm." }
             ],
             vocab: [
@@ -721,7 +721,7 @@ window.hskCurriculumData = {
             dialogue: [
                 { role: "A", zh: "桌子上放着什么？", pinyin: "Zhuōzi shàng fàng zhe shénme?", vi: "Trên bàn đang đặt cái gì vậy?" },
                 { role: "B", zh: "桌子上放着一杯热咖啡和一本书。", pinyin: "Zhuōzi shàng fàng zhe yì bēi rè kāfēi hé yì běn shū.", vi: "Trên bàn đang đặt một tách cà phê nóng và một cuốn sách." },
-                { role: "A", zh: "那杯咖啡是谁的？", pinyin: "Nà bēi kāfēi :  shì shéi de?", vi: "Tách cà phê kia là của ai vậy?" },
+                { role: "A", zh: "那杯咖啡是谁的？", pinyin: "Nà bēi kāfēi shì shéi de?", vi: "Tách cà phê kia là của ai vậy?" },
                 { role: "B", zh: "是我给经理准备的。", pinyin: "Shì wǒ gěi jīnglǐ zhǔnbèi de.", vi: "Là do tôi chuẩn bị cho Giám đốc đấy." }
             ],
             vocab: [
@@ -763,7 +763,7 @@ window.hskCurriculumData = {
         {
             lessonId: 4,
             title: "Bài 4: 听说你买房了 - Nghe nói bạn mua nhà rồi",
-            desc: "Học cách nói về tin đồn hoặc thông tin nghe được, thảo luận chuyện mua sắm tài sản lớn.",
+            desc: "Học cách nói về tin đồn hoặc thông định nghe được, thảo luận chuyện mua sắm tài sản lớn.",
             dialogue: [
                 { role: "A", zh: "听说你买房了？在哪儿买的？", pinyin: "Tīngshuō nǐ mǎi fáng le? Zài nǎr mǎi de?", vi: "Nghe nói bạn mua nhà rồi à? Mua ở đâu vậy?" },
                 { role: "B", zh: "在公司旁边。哪怕价格很贵，我也要买。", pinyin: "Zài gōngsī pángbiān. Nǎpà jiàgé hěn guì, wǒ yě yào mǎi.", vi: "Ở ngay cạnh công ty. Cho dù giá cả có đắt đỏ, tôi vẫn phải mua." },
@@ -802,7 +802,7 @@ window.hskCurriculumData = {
             grammar: "1. Cấu trúc so sánh bằng '跟... 一样': 'A + 跟 + B + 一样 + (Tính từ)' (A giống B hoặc A giống B về mặt tính chất nào đó).\n2. Giới từ '跟': Biểu thị sự đồng hành cùng ai đó làm việc gì (A + 跟 + B + 一起 + Động từ).",
             quiz: [
                 { q: "Cấu trúc dùng để so sánh bằng trong tiếng Trung là gì?", options: ["比...高", "跟...一样", "最...好", "没有...近"], ans: "跟...一样" },
-                { q: "Môn thể thao 'Bóng rổ' chơi bằng tay nên động từ đi kèm là chữ nào?", options: ["踢 (đá)", "打 (chơi bằng tay)", "跑", "送"], ans: "打 (chơi bằng tay)" },
+                { q: "Môn thể thao 'Bóng rổ' chơi bằng tay nên động từ đi kèm là chữ nào?", options: ["踢", "打", "跑", "送"], ans: "打" },
                 { q: "Dịch câu 'Tôi giống anh ấy'?", options: ["我跟他一样", "他比我大", "我不是他", "我跟他一起"], ans: "我跟他一样" }
             ]
         },
@@ -824,7 +824,7 @@ window.hskCurriculumData = {
             ],
             grammar: "1. Biểu đạt tác dụng '对... 有好处/很好': Cấu trúc 'A + 对 + B + 很好 / 有好处' (Hành động A có lợi / rất tốt đối với đối tượng B).\n2. Cặp liên từ chỉ sự tương phản '虽然... 但是...': Kết nối hai vế câu có nghĩa tương phản trái ngược nhau.",
             quiz: [
-                { q: "Cặp liên từ biểu thị quan hệ tương phản 'Tuy... nhưng...' là cặp từ nào?", options: ["因为...所以...", "虽然...但是...", "不但...而且...", "如果...就..."], ans: "虽然...sử dụng..." },
+                { q: "Cặp liên từ biểu thị quan hệ tương phản 'Tuy... nhưng...' là cặp từ nào?", options: ["因为...所以...", "虽然...但是...", "不但...而且...", "如果...就..."], ans: "虽然...但是..." },
                 { q: "Dịch câu 'Leo núi rất tốt cho cơ thể'?", options: ["爬山对身体很好", "爬山身体不好", "爬山虽然累", "我不喜欢爬山"], ans: "爬山对身体很好" },
                 { q: "Chữ '山' trong từ '爬山' mô phỏng hình dạng của cái gì?", options: ["Dòng sông", "Ngọn núi", "Cái cây", "Mặt trời"], ans: "Ngọn núi" }
             ]
@@ -868,7 +868,7 @@ window.hskCurriculumData = {
                 { id: "cur3_8_3", word: "进步", pinyin: "jìnbù", meaning: "tiến bộ", pos: "v", tip: "Tiến (进 - đi lên) kết hợp Bộ (步 - bước chân)." },
                 { id: "cur3_8_4", word: "慢", pinyin: "màn", meaning: "chậm", pos: "adj", tip: "Ngược nghĩa hoàn toàn với 快 (kuài - nhanh chóng)." }
             ],
-            grammar: "1. So sánh kết hợp bổ ngữ trạng thái: Cấu trúc 'A + 比 + B + Động từ + 得 + Tính từ' (Ví dụ: 他比我 speak 得好 - Anh ấy nói tốt hơn tôi).\n2. Hỏi thời lượng hành động '多长时间': Cấu trúc 'S + Động từ + (了) + 多长时间 + (了)？'.",
+            grammar: "1. So sánh kết hợp bổ ngữ trạng thái: Cấu trúc 'A + 比 + B + Động từ + 得 + Tính từ' (Ví dụ: 他比我说得好 - Anh ấy nói tốt hơn tôi).\n2. Hỏi thời lượng hành động '多长时间': Cấu trúc 'S + Động từ + (了) + 多长时间 + (了)？'.",
             quiz: [
                 { q: "Cấu trúc so sánh kết hợp bổ ngữ trạng thái nào sau đây là đúng ngữ pháp?", options: ["他比我学得快", "他比我快学", "他学得比我快", "A và C đều đúng"], ans: "A và C đều đúng" },
                 { q: "Dịch nghĩa của từ '普通话'?", options: ["Tiếng địa phương", "Tiếng Phổ thông", "Ngoại ngữ", "Tiếng lóng"], ans: "Tiếng Phổ thông" },
@@ -903,7 +903,7 @@ window.hskCurriculumData = {
             title: "Bài 10: 你把电脑关了吧 - Bạn tắt máy tính đi nhé",
             desc: "Học cấu trúc câu chữ '把' cơ bản, điều khiển và tác động lên đồ vật xung quanh.",
             dialogue: [
-                { role: "A", zh: "已经十一点 rồi, 你怎么还不睡觉？", pinyin: "Yǐjīng shíyī diǎn le, nǐ zěnme hái bù shuìjiào?", vi: "Đã mười một giờ rồi, sao bạn vẫn chưa đi ngủ thế?" },
+                { role: "A", zh: "已经十一点了，你怎么还不睡觉？", pinyin: "Yǐjīng shíyī diǎn le, nǐ zěnme hái bù shuìjiào?", vi: "Đã mười một giờ rồi, sao bạn vẫn chưa đi ngủ thế?" },
                 { role: "B", zh: "我再看一个新闻。你先睡吧。", pinyin: "Wǒ zài kàn yí gè xīnwén. Nǐ xiān shuì ba.", vi: "Tôi xem thêm một tin tức nữa. Bạn ngủ trước đi." },
                 { role: "A", zh: "那你早点儿睡，把电脑关了吧。", pinyin: "Nà nǐ zǎo diǎnr shuì, bǎ diànnǎo guān le ba.", vi: "Thế thì bạn ngủ sớm đi nhé, tắt máy tính đi." },
                 { role: "B", zh: "好，我马上就关。", pinyin: "Hǎo, wǒ mǎshàng jiù guān.", vi: "Được rồi, tôi tắt ngay đây." }
@@ -911,13 +911,13 @@ window.hskCurriculumData = {
             vocab: [
                 { id: "cur3_10_1", word: "把", pinyin: "bǎ", meaning: "đưa (giới từ câu chữ 把)", pos: "p", tip: "Giới từ dùng để đưa tân ngữ lên trước động từ chính." },
                 { id: "cur3_10_2", word: "关", pinyin: "guān", meaning: "đóng, tắt", pos: "v", tip: "Ngược nghĩa với 开 (kāi - mở, bật)." },
-                { id: "cur3_10_3", word: "新闻", pinyin: "xìnwén", meaning: "tin tức, thời sự", pos: "n", tip: "Tân (新 - mới) kết hợp Văn (闻 - nghe thấy)." },
+                { id: "cur3_10_3", word: "新闻", pinyin: "xīnwén", meaning: "tin tức, thời sự", pos: "n", tip: "Tân (新 - mới) kết hợp Văn (闻 - nghe thấy)." },
                 { id: "cur3_10_4", word: "马上", pinyin: "mǎshàng", meaning: "ngay lập tức", pos: "other", tip: "Phó từ chỉ hành động diễn ra cực kỳ nhanh chóng." }
             ],
             grammar: "1. Câu chữ '把' cơ bản: Cấu trúc dùng để miêu tả hành động tác động lên một đối tượng xác định làm thay đổi trạng thái của nó: 'Chủ ngữ + 把 + Tân ngữ + Động từ + Thành phần khác (ví dụ: 了)'.\n2. Phó từ chỉ sự ưu tiên '先': Biểu thị hành động thực hiện trước (Ví dụ: 你先睡 - Bạn ngủ trước đi).",
             quiz: [
                 { q: "Cấu trúc câu chữ '把' đúng ngữ pháp là cấu trúc nào?", options: ["S + 把 + O + V + Thành phần khác", "S + V + 把 + O", "把 + S + O + V", "S + O + 把 + V"], ans: "S + 把 + O + V + Thành phần khác" },
-                { q: "Ngược nghĩa với động từ '关' (đóng, tắt) là động từ nào?", options: ["放", "开 (mở, bật)", "送", "走"], ans: "开 (mở, bật)" },
+                { q: "Ngược nghĩa với động từ '关' (đóng, tắt) là động từ nào?", options: ["放", "开", "送", "走"], ans: "开" },
                 { q: "Dịch câu 'Tôi tắt ngay lập tức'?", options: ["我马上就关", "我不关", "我先关", "我把电脑关了"], ans: "我马上就关" }
             ]
         }
