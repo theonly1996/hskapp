@@ -1,72 +1,74 @@
 # Phase 1A Design
-## Unified Learning Progress
 
-Version: 0.1.0
+# Unified Learning Progress & Progress Store Foundation
 
-Status: Draft
+Version: 1.0.0
 
----
-
-# Mục tiêu
-
-Thống nhất toàn bộ dữ liệu tiến độ học về một nguồn duy nhất (Single Source of Truth).
-
-Hiện tại ứng dụng đang có nhiều nơi tự lưu tiến độ bằng LocalStorage.
-
-Điều này sẽ gây khó khăn khi triển khai:
-
-- Daily Learning
-- Progress Tracking
-- Spaced Repetition (SRS)
-- Statistics
-
-Sau Phase 1A, mọi tính năng phải sử dụng chung một nguồn dữ liệu.
+Status: Approved Design
+Implementation: Not Started
 
 ---
 
-# Phạm vi
+# 1. Mục tiêu
 
-Chỉ refactor cách quản lý Progress.
+Phase 1A nhằm mục tiêu thống nhất cách quản lý dữ liệu tiến độ học tập trong ứng dụng HSK.
 
-Không thay đổi giao diện.
+Hiện tại dữ liệu Progress đang được quản lý ở nhiều nơi:
 
-Không thêm tính năng.
+* App.js
+* QuizTab.js
+* OverviewTab.js
+* LocalStorage với nhiều key khác nhau
 
-Không thay đổi trải nghiệm người dùng.
+Điều này tạo ra nhiều nguồn dữ liệu khác nhau (Multiple Sources of Truth), gây khó khăn cho việc phát triển các tính năng tương lai:
 
----
+* Daily Learning
+* Progress Tracking
+* Statistics
+* Spaced Repetition (SRS)
 
-# Hiện trạng
+Sau Phase 1A:
 
-Progress hiện được lưu ở nhiều nơi.
-
-Ví dụ:
-
-App.js
-
-↓
-
-progress
-
-QuizTab.js
-
-↓
-
-translation progress
-
-LocalStorage
-
-↓
-
-nhiều key khác nhau
-
-Điều này tạo ra nhiều nguồn dữ liệu khác nhau.
+* Progress sẽ được quản lý thông qua một lớp trung gian duy nhất: Progress Store.
+* Component không được thao tác LocalStorage trực tiếp.
+* Dữ liệu học tập hiện tại được giữ nguyên.
+* Không thay đổi giao diện người dùng.
 
 ---
 
-# Kiến trúc sau khi Refactor
+# 2. Phạm vi Phase 1A
 
-App
+## Bao gồm
+
+* Tạo lớp Progress Store.
+* Chuẩn hóa việc đọc/ghi Progress.
+* Di chuyển logic LocalStorage ra khỏi component.
+* Giữ nguyên dữ liệu người dùng hiện tại.
+* Chuẩn bị nền tảng cho các Phase tiếp theo.
+
+## Không bao gồm
+
+* Không thay đổi UI.
+* Không thêm tính năng học mới.
+* Không triển khai Daily Learning.
+* Không triển khai SRS.
+* Không triển khai Statistics nâng cao.
+* Không thay đổi dữ liệu HSK.
+* Không đổi framework.
+* Không thêm thư viện.
+
+---
+
+# 3. Nguyên tắc kiến trúc
+
+## Single Source of Truth
+
+Progress Store là nơi duy nhất chịu trách nhiệm quản lý dữ liệu tiến độ.
+
+Luồng:
+
+```
+Component
 
 ↓
 
@@ -78,61 +80,270 @@ LocalStorage
 
 ↓
 
-Overview
-
-Quiz
-
-Flashcard
-
-Dictionary
-
-Grammar
-
-Các tab chỉ đọc và cập nhật Progress Store.
-
-Không tab nào được tự ghi LocalStorage.
-
----
-
-# Single Source of Truth
-
-Progress chỉ tồn tại tại một nơi.
-
-App.js
+React State
 
 ↓
 
-progress
+UI
+```
 
-Các component khác nhận progress thông qua props hoặc custom hook.
+Component không được:
+
+* localStorage.getItem()
+* localStorage.setItem()
+
+trực tiếp.
 
 ---
 
-# LocalStorage
+# 4. Môi trường kỹ thuật hiện tại
 
-Chỉ còn một key chính.
+Project hiện tại không sử dụng:
+
+* Vite
+* Webpack
+* ES Module
+* package.json
+* import/export
+
+Cơ chế load:
+
+* JavaScript thuần dùng `<script src="">`
+* JSX component dùng Babel Standalone
+
+Vì vậy:
+
+Progress Store phải:
+
+* Là JavaScript thuần.
+* Không dùng import/export.
+* Không dùng JSX.
+* Expose qua window.
 
 Ví dụ:
 
-hsk_learning_progress
-
-Cấu trúc sẽ được giữ ổn định.
-
-Các key khác nếu trùng chức năng sẽ được hợp nhất hoặc loại bỏ sau khi xác nhận.
+```javascript
+window.ProgressStore
+```
 
 ---
 
-# Data Flow
+# 5. Cấu trúc dữ liệu Progress Store v1
 
+Progress Store v1 chỉ quản lý dữ liệu thô.
+
+Không lưu dữ liệu có thể tính toán lại.
+
+---
+
+## 5.1 Vocabulary Progress
+
+Nguồn hiện tại:
+
+```
+hsk_learning_progress
+```
+
+Giữ nguyên schema:
+
+```javascript
+{
+  [wordId]: "new" | "learning" | "mastered"
+}
+```
+
+Không thêm field SRS trong Phase này.
+
+---
+
+## 5.2 Lesson Progress
+
+Nguồn hiện tại:
+
+```
+hskpro_translation_progress_v1
+```
+
+Schema giữ nguyên:
+
+```javascript
+[
+ {
+   lessonId,
+   level,
+   title,
+   isCompleted,
+   currentScore
+ }
+]
+```
+
+---
+
+## 5.3 Bookmarks
+
+Nguồn hiện tại:
+
+```
+hsk_bookmarks
+```
+
+Giữ nguyên cấu trúc.
+
+---
+
+## 5.4 Study Activity
+
+Nguồn hiện tại:
+
+```
+hsk_study_streak
+hsk_last_active_date
+```
+
+Đây là trạng thái hoạt động học tập hiện tại.
+
+Schema:
+
+```javascript
+{
+ lastActiveDate: string,
+ currentStreak: number
+}
+```
+
+Không phải Statistics.
+
+---
+
+# 6. Domain chưa triển khai
+
+## Quiz History
+
+Chưa có trong Phase 1A.
+
+Không tạo:
+
+* LocalStorage key.
+* API.
+* Logic.
+
+Được ghi nhận là kế hoạch tương lai.
+
+---
+
+## Review Status / SRS
+
+Chưa có trong Phase 1A.
+
+Không tạo:
+
+* nextReviewDate
+* interval
+* easeFactor
+
+Sẽ thiết kế ở Phase SRS riêng.
+
+---
+
+# 7. Progress Store API v1
+
+## Vocabulary
+
+```javascript
+getWordProgress(wordId)
+
+updateWordProgress(wordId, status)
+
+getAllVocabularyProgress()
+```
+
+---
+
+## Lesson
+
+```javascript
+getLessonProgress(lessonId)
+
+getAllLessonProgress()
+
+markLessonComplete(lessonId, score)
+
+toggleLessonManual(lessonId)
+```
+
+---
+
+## Bookmark
+
+```javascript
+addBookmark(word)
+
+removeBookmark(wordId)
+
+isBookmarked(wordId)
+
+getAllBookmarks()
+```
+
+---
+
+## Study Activity
+
+```javascript
+recordDailyActivity()
+
+getStudyActivity()
+```
+
+---
+
+# 8. Statistics Service
+
+Statistics không thuộc Progress Store.
+
+Statistics là lớp tính toán riêng.
+
+Vị trí:
+
+```
+js/services/statisticsService.js
+```
+
+Nguyên tắc:
+
+* Không đọc LocalStorage.
+* Không ghi dữ liệu.
+* Không lưu state.
+
+Chỉ nhận dữ liệu và trả kết quả.
+
+Ví dụ:
+
+```javascript
+calculateVocabularyStats()
+
+calculateLessonStats()
+
+calculateStreakDisplay()
+```
+
+---
+
+# 9. Data Flow
+
+Ví dụ hoàn thành bài Quiz:
+
+```
 User Action
 
 ↓
 
-Component
+QuizTab
 
 ↓
 
-Update Progress
+ProgressStore.markLessonComplete()
 
 ↓
 
@@ -140,87 +351,198 @@ Save LocalStorage
 
 ↓
 
-Re-render UI
+Return dữ liệu mới
 
-Không component nào được ghi LocalStorage trực tiếp.
+↓
 
----
+App.js cập nhật React State
 
-# File dự kiến sửa
+↓
 
-- App.js
-- QuizTab.js
-- utils.js (nếu cần)
-- data.js (chỉ khi thật sự cần)
+UI Render lại
+```
 
----
+Không có:
 
-# File không được sửa
+* Redux
+* Context
+* Pub/Sub
 
-- hsk1.js
-- hsk2.js
-- hsk3.js
-- hsk4.js
-- hsk_curriculum.js
-- hsk_grammar.js
-- hsk_stories.js
-
-Không thay đổi dữ liệu học.
+trong Phase 1A.
 
 ---
 
-# Rủi ro
+# 10. Migration Strategy
 
-Nếu refactor sai:
+Mục tiêu:
 
-- mất bookmark
-- mất progress
-- sai thống kê
-- quiz không đồng bộ
+Không mất dữ liệu người dùng.
 
-Đây là dữ liệu thật của người dùng.
+Phase 1A:
 
-Ưu tiên an toàn hơn tốc độ.
+Giữ nguyên LocalStorage key hiện tại:
+
+```
+hsk_learning_progress
+
+hskpro_translation_progress_v1
+
+hsk_bookmarks
+
+hsk_study_streak
+
+hsk_last_active_date
+```
+
+Progress Store chỉ đóng vai trò quản lý.
+
+Không migrate dữ liệu sang format mới.
+
+Không xóa key cũ.
 
 ---
 
-# Kế hoạch Rollback
+# 11. File được phép sửa
+
+## Tạo mới
+
+```
+js/store/progressStore.js
+
+js/services/statisticsService.js
+```
+
+---
+
+## Có thể sửa
+
+```
+index.html
+
+js/App.js
+
+js/tabs/OverviewTab.js
+
+js/tabs/QuizTab.js
+```
+
+---
+
+# 12. File không được sửa
+
+Không thay đổi:
+
+```
+hsk1.js
+hsk2.js
+hsk3.js
+hsk4.js
+
+hsk_curriculum.js
+
+hsk_grammar.js
+
+hsk_stories.js
+
+css/style.css
+```
+
+Các component hiển thị thuần:
+
+```
+WordCard.js
+Hanzicharacter.js
+Toast.js
+LoadingScreen.js
+```
+
+---
+
+# 13. Thứ tự triển khai
+
+Không được làm toàn bộ một lần.
+
+## Step 1
+
+Tạo:
+
+```
+progressStore.js
+```
+
+Chưa sửa component.
+
+---
+
+## Step 2
+
+Tích hợp:
+
+```
+App.js
+```
+
+Thay thế việc đọc/ghi LocalStorage.
+
+---
+
+## Step 3
+
+Tích hợp:
+
+```
+OverviewTab.js
+QuizTab.js
+```
+
+---
+
+## Step 4
+
+Kiểm thử.
+
+---
+
+# 14. Definition of Done
+
+Phase 1A chỉ hoàn thành khi:
+
+* Không còn component ghi LocalStorage trực tiếp.
+* Progress Store hoạt động ổn định.
+* Không mất dữ liệu người dùng cũ.
+* Bookmark vẫn hoạt động.
+* Quiz vẫn hoạt động.
+* Flashcard vẫn hoạt động.
+* Grammar vẫn hoạt động.
+* Overview hiển thị đúng.
+* Không có lỗi Console.
+* Không thay đổi giao diện.
+* CHANGELOG.md được cập nhật.
+* ROADMAP.md cập nhật trạng thái Phase 1A.
+
+---
+
+# 15. Rollback Plan
 
 Nếu xảy ra lỗi:
 
-1. Khôi phục logic cũ.
+1. Khôi phục commit trước Phase 1A.
 2. Không xóa LocalStorage cũ.
-3. Giữ khả năng đọc dữ liệu cũ.
-4. Chỉ chuyển đổi dữ liệu khi đã xác nhận thành công.
+3. Giữ dữ liệu người dùng nguyên trạng.
+4. Chỉ migration khi đã kiểm tra thành công.
 
 ---
 
-# Tiêu chí hoàn thành
+# Kết luận
 
-- Chỉ còn một nguồn Progress.
-- Không còn LocalStorage trùng chức năng.
-- Không thay đổi giao diện.
-- Không mất dữ liệu người dùng.
-- Không ảnh hưởng các tính năng hiện tại.
+Phase 1A không tạo tính năng mới.
 
----
+Mục tiêu duy nhất:
 
-# Sau Phase 1A
+Xây dựng nền tảng quản lý Progress an toàn, ổn định, sẵn sàng cho các Phase:
 
-Tiếp tục:
-
-Phase 1B
-
-Data Refactor
-
-- Tách dữ liệu khỏi utils.js
-- Tách hskProData khỏi data.js
-
-Sau đó:
-
-Phase 1C
-
-State Refactor
-
-- Chia App.js thành các domain state
-- Chuẩn bị cho Daily Learning
+* Daily Learning
+* Progress Tracking
+* Statistics
+* SRS
+* HSK mở rộng
