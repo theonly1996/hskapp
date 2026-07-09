@@ -28,13 +28,9 @@ const QuizTab = ({ words, loading }) => {
 
     // Load tiến độ luyện dịch từ LocalStorage để hiển thị điểm số trên danh sách bài
     useEffectQuiz(() => {
-        const savedProgress = localStorage.getItem('hskpro_translation_progress_v1');
-        if (savedProgress) {
-            try {
-                setTranslationLessonsProgress(JSON.parse(savedProgress));
-            } catch (e) {
-                console.error("Lỗi parse JSON tiến trình dịch:", e);
-            }
+        const savedList = window.ProgressService.getAllLessonProgress();
+        if (savedList && savedList.length > 0) {
+            setTranslationLessonsProgress(savedList);
         } else {
             const defaultList = window.hskProData?.defaultProgress || [];
             setTranslationLessonsProgress(defaultList);
@@ -107,35 +103,11 @@ const QuizTab = ({ words, loading }) => {
 
     // Hàm lưu điểm luyện dịch tự động đồng bộ xuống LocalStorage của OverviewTab
     const saveTranslationScore = (lessonId, finalScore) => {
-        const saved = localStorage.getItem('hskpro_translation_progress_v1');
-        let progressList = saved ? JSON.parse(saved) : (window.hskProData?.defaultProgress || []);
-        
-        let updated = false;
-        progressList = progressList.map(item => {
-            if (item.lessonId === lessonId) {
-                updated = true;
-                return {
-                    ...item,
-                    isCompleted: true,
-                    currentScore: finalScore > item.currentScore ? finalScore : item.currentScore
-                };
-            }
-            return item;
-        });
+        const lesson = window.hskProData?.lessons?.find(l => l.lessonId === lessonId);
+        const level = lesson?.level || (lessonId <= 15 ? 1 : lessonId <= 30 ? 2 : 3);
+        const title = lesson?.title || `Bài ${lessonId}`;
 
-        if (!updated) {
-            const lesson = window.hskProData?.lessons?.find(l => l.lessonId === lessonId);
-            const level = lesson?.level || (lessonId <= 15 ? 1 : lessonId <= 30 ? 2 : 3);
-            progressList.push({ 
-                lessonId, 
-                level,
-                title: lesson?.title || `Bài ${lessonId}`, 
-                isCompleted: true, 
-                currentScore: finalScore 
-            });
-        }
-
-        localStorage.setItem('hskpro_translation_progress_v1', JSON.stringify(progressList));
+        window.ProgressService.recordLessonScore(lessonId, finalScore, { level, title });
     };
 
     // Xử lý nộp bài Luyện Dịch câu hỏi tiếng Việt sang tiếng Trung

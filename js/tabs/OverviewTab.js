@@ -77,58 +77,13 @@ const OverviewTab = ({ progress = {}, bookmarks = [], onSwitchTab, onSwitchLevel
             { lessonId: 45, level: 3, title: "Bài 45 (H3-B15): 终于把 problem 解决了", isCompleted: false, currentScore: 0 }
         ];
 
-        const savedProgress = localStorage.getItem('hskpro_translation_progress_v1');
-        if (savedProgress) {
-            try {
-                const parsed = JSON.parse(savedProgress);
-                const savedMap = new Map(parsed.map(item => [item.lessonId, item]));
-                
-                let mergedList = [];
-                let hasChanges = false;
-                
-                defaultList.forEach(defaultItem => {
-                    if (savedMap.has(defaultItem.lessonId)) {
-                        const savedItem = savedMap.get(defaultItem.lessonId);
-                        let updatedLevel = savedItem.level;
-                        if (updatedLevel === undefined || updatedLevel === null) {
-                            updatedLevel = defaultItem.level;
-                            hasChanges = true;
-                        }
-                        mergedList.push({
-                            ...savedItem,
-                            level: updatedLevel,
-                            title: savedItem.title || defaultItem.title
-                        });
-                    } else {
-                        mergedList.push(defaultItem);
-                        hasChanges = true;
-                    }
-                });
-
-                mergedList.sort((a, b) => a.lessonId - b.lessonId);
-                setTranslationProgress(mergedList);
-                if (hasChanges) {
-                    localStorage.setItem('hskpro_translation_progress_v1', JSON.stringify(mergedList));
-                }
-            } catch (e) {
-                console.error("Lỗi đồng bộ dữ liệu tiến trình dịch:", e);
-                setTranslationProgress(defaultList);
-            }
-        } else {
-            setTranslationProgress(defaultList);
-            localStorage.setItem('hskpro_translation_progress_v1', JSON.stringify(defaultList));
-        }
+        const mergedList = window.ProgressService.syncLessonProgress(defaultList);
+        setTranslationProgress(mergedList);
     }, []);
 
     const handleToggleLesson = (lessonId) => {
-        const updated = translationProgress.map(item => {
-            if (item.lessonId === lessonId) {
-                return { ...item, isCompleted: !item.isCompleted };
-            }
-            return item;
-        });
+        const updated = window.ProgressService.toggleLessonProgress(lessonId);
         setTranslationProgress(updated);
-        localStorage.setItem('hskpro_translation_progress_v1', JSON.stringify(updated));
     };
 
     const levelStats = useMemoOverview(() => {

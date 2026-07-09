@@ -196,15 +196,18 @@
    * - Nếu lesson đã tồn tại: isCompleted = true, currentScore chỉ được
    *   CẬP NHẬT khi điểm mới CAO HƠN điểm cũ. Điểm mới thấp hơn sẽ KHÔNG
    *   ghi đè điểm cao đã đạt trước đó.
-   * - Nếu lesson chưa tồn tại trong danh sách: tạo entry mới (level, title
-   *   chưa xác định nên để null; component gọi có thể bổ sung ở bước
-   *   tích hợp tiếp theo).
+   * - Nếu lesson chưa tồn tại trong danh sách: tạo entry mới. `level` và
+   *   `title` lấy từ tham số `meta` nếu được truyền vào (đúng hành vi
+   *   saveTranslationScore hiện tại của QuizTab.js, nơi level/title được
+   *   suy ra từ dữ liệu bài học trước khi tạo entry mới); nếu không có
+   *   `meta`, giữ hành vi cũ là để null.
    *
    * @param {string|number} lessonId
    * @param {number} score
+   * @param {{level?: (number|null), title?: (string|null)}} [meta] Chỉ dùng khi tạo entry mới.
    * @returns {object} Entry lesson sau khi cập nhật.
    */
-  function markLessonComplete(lessonId, score) {
+  function markLessonComplete(lessonId, score, meta) {
     var lessons = readJSON(KEYS.LESSON_PROGRESS, []);
     var entry = null;
 
@@ -221,8 +224,8 @@
     } else {
       entry = {
         lessonId: lessonId,
-        level: null,
-        title: null,
+        level: (meta && meta.level !== undefined) ? meta.level : null,
+        title: (meta && meta.title !== undefined) ? meta.title : null,
         isCompleted: true,
         currentScore: score
       };
@@ -265,6 +268,19 @@
 
     writeJSON(KEYS.LESSON_PROGRESS, lessons);
     return entry;
+  }
+
+  /**
+   * Ghi đè toàn bộ danh sách Lesson Progress bằng dữ liệu cho trước.
+   * Dùng cho việc đồng bộ dữ liệu mặc định (ProgressService.syncLessonProgress).
+   * Không xử lý / validate / migrate dữ liệu — ghi nguyên trạng mảng
+   * truyền vào xuống đúng key hskpro_translation_progress_v1.
+   * @param {Array} data [ { lessonId, level, title, isCompleted, currentScore } ]
+   * @returns {Array} Dữ liệu vừa ghi.
+   */
+  function replaceAllLessonProgress(data) {
+    writeJSON(KEYS.LESSON_PROGRESS, data);
+    return data;
   }
 
   // =======================================================================
@@ -462,6 +478,7 @@
     // Lesson
     getLessonProgress: getLessonProgress,
     getAllLessonProgress: getAllLessonProgress,
+    replaceAllLessonProgress: replaceAllLessonProgress,
     markLessonComplete: markLessonComplete,
     toggleLessonManual: toggleLessonManual,
 

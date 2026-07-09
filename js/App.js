@@ -133,16 +133,16 @@ const App = () => {
     }, [darkMode]);
 
     useEffectApp(() => {
-        const activity = window.ProgressStore.recordDailyActivity();
-        setStreak(activity.currentStreak);
+        const currentStreak = window.ProgressService.recordDailyActivity();
+        setStreak(currentStreak);
     }, []);
 
-    const [bookmarks, setBookmarks] = useStateApp(() => window.ProgressStore.getAllBookmarks());
+    const [bookmarks, setBookmarks] = useStateApp(() => window.ProgressService.getAllBookmarks());
 
-    const [progress, setProgress] = useStateApp(() => window.ProgressStore.getAllVocabularyProgress());
+    const [progress, setProgress] = useStateApp(() => window.ProgressService.getAllVocabularyProgress());
 
     const changeStatus = (wordId, newStatus) => {
-        const updated = window.ProgressStore.updateWordProgress(wordId, newStatus);
+        const updated = window.ProgressService.updateWordProgress(wordId, newStatus);
         setProgress(updated);
         if (newStatus === 'mastered') {
             showToast("Đã thuộc thêm 1 từ vựng!", "success");
@@ -150,15 +150,12 @@ const App = () => {
     };
 
     const toggleBookmark = (wordToToggle) => {
-        const exists = window.ProgressStore.isBookmarked(wordToToggle.id);
-        if (exists) {
-            const updated = window.ProgressStore.removeBookmark(wordToToggle.id);
-            setBookmarks(updated);
-            showToast(`Đã bỏ lưu: ${wordToToggle.word}`, "info");
-        } else {
-            const updated = window.ProgressStore.addBookmark(wordToToggle);
-            setBookmarks(updated);
+        const result = window.ProgressService.toggleBookmark(wordToToggle);
+        setBookmarks(result.bookmarks);
+        if (result.wasAdded) {
             showToast(`Đã lưu ưu tiên: ${wordToToggle.word}`, "success");
+        } else {
+            showToast(`Đã bỏ lưu: ${wordToToggle.word}`, "info");
         }
     };
 
@@ -173,11 +170,11 @@ const App = () => {
     }, [activeLevel]);
 
     const exportData = () => {
-        const backupObj = window.ProgressStore.exportBackup();
+        const backupObj = window.ProgressService.exportBackup();
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupObj));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `hsk_progress_backup_${new Date().toISOString().split('T')[0]}.json`);
+        downloadAnchor.setAttribute("download", window.ProgressService.getBackupFilename());
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
@@ -191,9 +188,9 @@ const App = () => {
             fileReader.onload = (event) => {
                 try {
                     const parsed = JSON.parse(event.target.result);
-                    window.ProgressStore.importBackup(parsed);
-                    setBookmarks(window.ProgressStore.getAllBookmarks());
-                    setProgress(window.ProgressStore.getAllVocabularyProgress());
+                    const result = window.ProgressService.importBackup(parsed);
+                    setBookmarks(result.bookmarks);
+                    setProgress(result.progress);
                     showToast("Đã đồng bộ sao lưu dữ liệu thành công!", "success");
                 } catch (err) {
                     showToast("Lỗi! Tệp tin sao lưu không chính xác.", "error");
