@@ -28,7 +28,8 @@ Mỗi Phase phải:
 
 ## Trạng thái
 
-⬜ Chưa bắt đầu
+Phase 1A
+Status: ✅ Completed
 
 ---
 

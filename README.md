@@ -65,14 +65,11 @@ index.html
 ---
 
 ## Tài liệu
+Before editing any source code:
 
-Trước khi chỉnh sửa source code, hãy đọc theo thứ tự:
+1. docs/HANDOFF.md
 
-1. docs/PROJECT_CONTEXT.md
-2. docs/ARCHITECTURE.md
-3. docs/AI_RULES.md
-4. docs/ROADMAP.md
-5. docs/CHANGELOG.md
+Follow the reading order defined inside HANDOFF.md.
 
 ---
 
@@ -137,11 +134,12 @@ Mọi thay đổi cần tuân thủ các tài liệu trong thư mục `docs`.
 
 Current Version
 
-v0.1.0
+v0.3.0
 
 Development Stage
 
-Architecture Review
+Phase 1A Completed (bao gồm Final Audit — xem docs/PHASE_1A_PROGRESS.md)
+Preparing Phase 1B
 
 ## Development Principles
 
@@ -150,3 +148,38 @@ Architecture Review
 - Offline First
 - Mobile Friendly
 - Daily Learning
+
+Development Workflow
+
+1. Read HANDOFF.md
+2. Understand current phase
+3. Do NOT modify unrelated files
+4. Complete one phase at a time
+5. Update CHANGELOG
+6. Update HANDOFF if architecture changes
+
+Core Principles
+
+- Single Source of Truth
+- Small Incremental Changes
+- No Breaking Changes
+- Minimal Diff
+- Backward Compatibility
+
+Current Architecture
+
+UI
+ ↓
+ProgressService
+ ↓
+ProgressStore
+ ↓
+LocalStorage
+
+AI Rules
+
+- Never skip HANDOFF.md
+- Never jump to future phases
+- Finish current phase before starting next
+- Do not redesign architecture without updating docs
+- Keep changes minimal
