@@ -133,76 +133,33 @@ const App = () => {
     }, [darkMode]);
 
     useEffectApp(() => {
-        const today = new Date().toDateString();
-        const lastActive = localStorage.getItem('hsk_last_active_date');
-        let currentStreak = parseInt(localStorage.getItem('hsk_study_streak') || '0', 10);
-        
-        if (lastActive) {
-            const lastDate = new Date(lastActive);
-            const diffTime = Math.abs(new Date(today) - lastDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            if (diffDays === 1) {
-                currentStreak += 1;
-            } else if (diffDays > 1) {
-                currentStreak = 1; 
-            }
-        } else {
-            currentStreak = 1; 
-        }
-        
-        localStorage.setItem('hsk_last_active_date', today);
-        localStorage.setItem('hsk_study_streak', currentStreak.toString());
-        setStreak(currentStreak);
+        const activity = window.ProgressStore.recordDailyActivity();
+        setStreak(activity.currentStreak);
     }, []);
 
-    const [bookmarks, setBookmarks] = useStateApp(() => {
-        try {
-            const saved = localStorage.getItem('hsk_bookmarks');
-            return saved ? JSON.parse(saved) : [];
-        } catch (e) {
-            return [];
-        }
-    });
+    const [bookmarks, setBookmarks] = useStateApp(() => window.ProgressStore.getAllBookmarks());
 
-    useEffectApp(() => {
-        localStorage.setItem('hsk_bookmarks', JSON.stringify(bookmarks));
-    }, [bookmarks]);
-
-    const [progress, setProgress] = useStateApp(() => {
-        try {
-            const saved = localStorage.getItem('hsk_learning_progress');
-            return saved ? JSON.parse(saved) : {};
-        } catch (e) {
-            return {};
-        }
-    });
-
-    useEffectApp(() => {
-        localStorage.setItem('hsk_learning_progress', JSON.stringify(progress));
-    }, [progress]);
+    const [progress, setProgress] = useStateApp(() => window.ProgressStore.getAllVocabularyProgress());
 
     const changeStatus = (wordId, newStatus) => {
-        setProgress(prev => ({
-            ...prev,
-            [wordId]: newStatus
-        }));
+        const updated = window.ProgressStore.updateWordProgress(wordId, newStatus);
+        setProgress(updated);
         if (newStatus === 'mastered') {
             showToast("Đã thuộc thêm 1 từ vựng!", "success");
         }
     };
 
     const toggleBookmark = (wordToToggle) => {
-        setBookmarks(prev => {
-            const exists = prev.find(b => b.id === wordToToggle.id);
-            if (exists) {
-                showToast(`Đã bỏ lưu: ${wordToToggle.word}`, "info");
-                return prev.filter(b => b.id !== wordToToggle.id);
-            } else {
-                showToast(`Đã lưu ưu tiên: ${wordToToggle.word}`, "success");
-                return [...prev, wordToToggle];
-            }
-        });
+        const exists = window.ProgressStore.isBookmarked(wordToToggle.id);
+        if (exists) {
+            const updated = window.ProgressStore.removeBookmark(wordToToggle.id);
+            setBookmarks(updated);
+            showToast(`Đã bỏ lưu: ${wordToToggle.word}`, "info");
+        } else {
+            const updated = window.ProgressStore.addBookmark(wordToToggle);
+            setBookmarks(updated);
+            showToast(`Đã lưu ưu tiên: ${wordToToggle.word}`, "success");
+        }
     };
 
     useEffectApp(() => {
@@ -216,10 +173,7 @@ const App = () => {
     }, [activeLevel]);
 
     const exportData = () => {
-        const backupObj = {
-            bookmarks,
-            progress
-        };
+        const backupObj = window.ProgressStore.exportBackup();
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupObj));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
@@ -237,8 +191,9 @@ const App = () => {
             fileReader.onload = (event) => {
                 try {
                     const parsed = JSON.parse(event.target.result);
-                    if (parsed.bookmarks) setBookmarks(parsed.bookmarks);
-                    if (parsed.progress) setProgress(parsed.progress);
+                    window.ProgressStore.importBackup(parsed);
+                    setBookmarks(window.ProgressStore.getAllBookmarks());
+                    setProgress(window.ProgressStore.getAllVocabularyProgress());
                     showToast("Đã đồng bộ sao lưu dữ liệu thành công!", "success");
                 } catch (err) {
                     showToast("Lỗi! Tệp tin sao lưu không chính xác.", "error");
@@ -248,24 +203,7 @@ const App = () => {
     };
 
     const progressStats = useMemoApp(() => {
-        const cleanWords = words.filter(w => w.id !== 'error');
-        const total = cleanWords.length || 1;
-        let learning = 0;
-        let mastered = 0;
-
-        cleanWords.forEach(w => {
-            const status = progress[w.id];
-            if (status === 'learning') learning++;
-            else if (status === 'mastered') mastered++;
-        });
-
-        return {
-            total,
-            learning,
-            mastered,
-            masteredPercent: Math.round((mastered / total) * 100),
-            learningPercent: Math.round((learning / total) * 100)
-        };
+        return window.ProgressService.getVocabularyStatistics(words);
     }, [words, progress]);
 
     const tabs = [
