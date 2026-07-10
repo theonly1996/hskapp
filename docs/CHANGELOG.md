@@ -197,6 +197,80 @@ Phase 1A được xem là hoàn thành từ thời điểm này (2026-07-09).
 
 ---
 
+# Version 0.4.0
+
+Ngày: 2026-07-09
+
+### Mục tiêu
+
+Phase 1B - Statistics Consolidation & Calculation Layer. Giải quyết
+Technical Debt #1 và #2 ghi nhận trong
+`docs/AUDIT_REPORT_PHASE_1A_STEP4_FINAL.md`: tạo tầng tính toán thống kê
+duy nhất cho toàn bộ ứng dụng và hợp nhất logic tính Vocabulary Statistics
+đang bị viết trùng ở `ProgressService.getVocabularyStatistics` và
+`OverviewTab.levelStats`.
+
+### File đã sửa
+
+- js/services/ProgressService.js
+
+- js/tabs/OverviewTab.js
+
+- index.html
+
+### File mới
+
+- js/services/StatisticsService.js
+
+### Tính năng
+
+- `StatisticsService.calculateVocabularyStats(progress, words)` và
+  `StatisticsService.calculateVocabularyStatsByLevel(...)`: pure function,
+  không side effect, không gọi Store, không đọc localStorage, không phụ
+  thuộc biến toàn cục.
+
+- `ProgressService.getVocabularyStatisticsByLevel(wordsByLevel, levels)`:
+  hàm mới, điều phối Store → StatisticsService.
+
+### Refactor
+
+- `ProgressService.getVocabularyStatistics(words)`: giữ nguyên chữ ký và
+  giá trị trả về, chỉ đổi thân hàm để uỷ quyền tính toán sang
+  StatisticsService.
+
+- `OverviewTab.levelStats`: giữ nguyên JSX và tên field kết quả trả về,
+  chỉ đổi thân hàm để gọi
+  `ProgressService.getVocabularyStatisticsByLevel(vocabSource, allLevels)`.
+
+- `index.html`: thêm đúng một dòng script `js/services/StatisticsService.js`,
+  đặt trước `js/services/ProgressService.js`.
+
+### Bug Fix
+
+Không có.
+
+### Breaking Change
+
+Không. Public API của ProgressStore và ProgressService không đổi ngoài
+việc bổ sung 1 hàm mới (`getVocabularyStatisticsByLevel`). Output UI giữ
+nguyên 100% trước và sau Phase 1B (đã xác nhận bằng test end-to-end trong
+Final Audit).
+
+### Ghi chú
+
+Final Audit (Step 4) kết luận PASS, không có Blocking issue. Phát hiện
+thêm 1 Technical Debt mới ngoài phạm vi Phase 1B: `FlashcardTab.js`
+(`getLessonStats()`, dòng 289-301) chứa một bản sao thứ 3 của công thức
+tính Vocabulary Statistics, chưa được hợp nhất vào StatisticsService. File
+này nằm trong danh sách "không được phép sửa" của Phase 1B nên không được
+xử lý ở đây; cần một Phase riêng (Design → Approve → Implement → Audit)
+trong tương lai nếu được phê duyệt. Chi tiết đầy đủ trong
+docs/audits/AUDIT_REPORT_PHASE_1B_FINAL.md.
+
+Phase 1B được xem là hoàn thành từ thời điểm này (2026-07-09).
+
+---
+
 # Template
 
 ## Version x.x.x

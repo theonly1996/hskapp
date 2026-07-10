@@ -87,50 +87,11 @@ const OverviewTab = ({ progress = {}, bookmarks = [], onSwitchTab, onSwitchLevel
     };
 
     const levelStats = useMemoOverview(() => {
-        let totalMastered = 0;
-        let totalLearning = 0;
-        let totalUnlearned = 0;
-        let totalWordsAllLevels = 0;
-
         const vocabSource = typeof window !== 'undefined' && window.FALLBACK_VOCABULARY 
             ? window.FALLBACK_VOCABULARY 
             : {};
 
-        const stats = allLevels.map(level => {
-            const levelWords = vocabSource[level] || [];
-            const total = levelWords.length;
-            totalWordsAllLevels += total;
-
-            let mastered = 0;
-            let learning = 0;
-            levelWords.forEach(w => {
-                const status = progress[w.id];
-                if (status === 'mastered') mastered++;
-                else if (status === 'learning') learning++;
-            });
-            
-            totalMastered += mastered;
-            totalLearning += learning;
-            totalUnlearned += (total - mastered - learning);
-
-            return {
-                level,
-                total,
-                mastered,
-                learning,
-                unlearned: total - mastered - learning,
-                masteredPercent: total > 0 ? Math.round((mastered / total) * 100) : 0
-            };
-        });
-
-        return {
-            stats,
-            totalMastered,
-            totalLearning,
-            totalUnlearned,
-            totalWordsAllLevels,
-            totalPercent: totalWordsAllLevels > 0 ? Math.round((totalMastered / totalWordsAllLevels) * 100) : 0
-        };
+        return window.ProgressService.getVocabularyStatisticsByLevel(vocabSource, allLevels);
     }, [progress]);
 
     const coreRadicals = useMemoOverview(() => {

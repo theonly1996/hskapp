@@ -16,7 +16,17 @@ Chi tiết: docs/PHASE_1A_PROGRESS.md
 
 Phase 1B
 
-⬜ ...
+✅ Step 1 StatisticsService
+
+✅ Step 2 ProgressService (getVocabularyStatisticsByLevel)
+
+✅ Step 3 OverviewTab (levelStats)
+
+✅ Step 4 Final Audit
+
+Phase 1B: ✅ Completed (2026-07-09)
+
+Chi tiết: docs/PHASE_1B_PROGRESS.md, docs/audits/AUDIT_REPORT_PHASE_1B_FINAL.md
 
 -------------------
 
