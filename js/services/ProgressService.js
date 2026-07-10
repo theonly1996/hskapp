@@ -19,41 +19,37 @@
 
   /**
    * Tính thống kê Vocabulary Progress cho một danh sách từ.
-   * Logic giữ nguyên y hệt `progressStats` (useMemo) hiện đang nằm trong App.js:
-   * - Loại bỏ từ có id === 'error' trước khi tính.
-   * - total mặc định là 1 nếu danh sách rỗng (tránh chia cho 0).
-   * - Đếm số từ có status 'learning' và 'mastered'.
+   * Phase 1B - Step 2: phần thân hàm nay uỷ quyền toàn bộ phép tính cho
+   * StatisticsService.calculateVocabularyStats — ProgressService chỉ còn
+   * đảm nhiệm việc nạp dữ liệu thô từ ProgressStore rồi truyền vào tầng
+   * tính toán. Chữ ký hàm và giá trị trả về giữ nguyên 100% so với trước.
    *
    * @param {Array} words Danh sách từ (mỗi phần tử có field `id`).
    * @returns {object} { total, learning, mastered, masteredPercent, learningPercent }
    */
   function getVocabularyStatistics(words) {
     var progress = window.ProgressStore.getAllVocabularyProgress();
-    var wordList = words || [];
+    return window.StatisticsService.calculateVocabularyStats(progress, words);
+  }
 
-    var cleanWords = wordList.filter(function (w) {
-      return w.id !== "error";
-    });
-    var total = cleanWords.length || 1;
-    var learning = 0;
-    var mastered = 0;
-
-    cleanWords.forEach(function (w) {
-      var status = progress[w.id];
-      if (status === "learning") {
-        learning++;
-      } else if (status === "mastered") {
-        mastered++;
-      }
-    });
-
-    return {
-      total: total,
-      learning: learning,
-      mastered: mastered,
-      masteredPercent: Math.round((mastered / total) * 100),
-      learningPercent: Math.round((learning / total) * 100)
-    };
+  /**
+   * Tính thống kê Vocabulary Progress theo từng cấp độ HSK, cùng tổng gộp
+   * trên toàn bộ các cấp độ.
+   * Phase 1B - Step 2: hàm mới, nạp dữ liệu thô từ ProgressStore rồi uỷ
+   * quyền phép tính cho StatisticsService.calculateVocabularyStatsByLevel.
+   * Đây là hàm duy nhất mà OverviewTab.js được phép gọi để lấy thống kê
+   * theo cấp độ HSK.
+   *
+   * @param {object} wordsByLevel Danh sách từ vựng theo từng cấp độ HSK,
+   *   { [level]: [word, word, ...] }.
+   * @param {Array} levels Danh sách cấp độ cần tính, theo đúng thứ tự
+   *   hiển thị.
+   * @returns {object} { stats, totalMastered, totalLearning, totalUnlearned,
+   *   totalWordsAllLevels, totalPercent }
+   */
+  function getVocabularyStatisticsByLevel(wordsByLevel, levels) {
+    var progress = window.ProgressStore.getAllVocabularyProgress();
+    return window.StatisticsService.calculateVocabularyStatsByLevel(progress, wordsByLevel, levels);
   }
 
   /**
@@ -345,6 +341,7 @@
 
   window.ProgressService = {
     getVocabularyStatistics: getVocabularyStatistics,
+    getVocabularyStatisticsByLevel: getVocabularyStatisticsByLevel,
     getMasteredWords: getMasteredWords,
     getLearningWords: getLearningWords,
     getUnlearnedWords: getUnlearnedWords,

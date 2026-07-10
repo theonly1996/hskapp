@@ -38,3 +38,5 @@ Không đổi API public nếu không được yêu cầu.
 Mỗi lần chỉ sửa một bước nhỏ.
 Sau mỗi bước phải tự audit và regression check.
 Luôn xác nhận lại tên file thực tế trên đĩa trước khi tham chiếu trong tài liệu hoặc index.html.
+
+Nếu file PHASE_X_DESIGN.md tồn tại thì phải đọc trước khi implementation.
