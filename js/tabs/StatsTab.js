@@ -9,7 +9,7 @@
 // =========================================================================
 const { useMemo: useMemoOverview, useState: useStateOverview } = React;
 
-const StatsTab = ({ progress = {}, bookmarks = [], onSwitchTab, onSwitchLevel, streak = 0, lessonProgress = [], onToggleLesson }) => {
+const StatsTab = ({ progress = {}, bookmarks = [], wordsByLevel = null, onSwitchTab, onSwitchLevel, streak = 0, lessonProgress = [], onToggleLesson }) => {
     const allLevels = [1, 2, 3, 4, 5, 6];
 
     const [selectedTranslationLevel, setSelectedTranslationLevel] = useStateOverview('all');
@@ -29,12 +29,10 @@ const StatsTab = ({ progress = {}, bookmarks = [], onSwitchTab, onSwitchLevel, s
     const [gameStatus, setGameStatus] = useStateOverview('idle'); // 'idle', 'playing', 'won'
 
     const levelStats = useMemoOverview(() => {
-        const vocabSource = typeof window !== 'undefined' && window.FALLBACK_VOCABULARY 
-            ? window.FALLBACK_VOCABULARY 
-            : {};
+        const vocabSource = wordsByLevel || (typeof window !== 'undefined' && window.FALLBACK_VOCABULARY) || {};
 
         return window.ProgressService.getVocabularyStatisticsByLevel(vocabSource, allLevels);
-    }, [progress]);
+    }, [progress, wordsByLevel]);
 
     const coreRadicals = useMemoOverview(() => {
         const rawList = window.hskProData?.coreRadicals || [];

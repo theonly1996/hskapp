@@ -39,7 +39,14 @@
     LESSON_PROGRESS: "hskpro_translation_progress_v1",
     BOOKMARKS: "hsk_bookmarks",
     STUDY_STREAK: "hsk_study_streak",
-    LAST_ACTIVE_DATE: "hsk_last_active_date"
+    LAST_ACTIVE_DATE: "hsk_last_active_date",
+    // Các key này được đọc/ghi trực tiếp bởi GrammarTab.js/FlashcardTab.js
+    // (ngoài phạm vi ProgressStore ban đầu), nhưng vẫn là dữ liệu người
+    // dùng cần được sao lưu/khôi phục đầy đủ — xem mục 5 (BACKUP) bên dưới.
+    GRAMMAR_BOOKMARKS: "hsk_grammar_bookmarks",
+    GRAMMAR_LEARNED: "hsk_grammar_learned",
+    FLASHCARD_CUSTOM_LESSONS: "flashcard_custom_lessons",
+    FLASHCARD_CUSTOM_WORDS: "flashcard_custom_words"
   };
 
   // ---------------------------------------------------------------------
@@ -436,21 +443,38 @@
   // =======================================================================
 
   /**
-   * Lấy toàn bộ dữ liệu backup hiện tại (Bookmark + Vocabulary Progress).
-   * @returns {object} { bookmarks: Array, progress: object }
+   * Lấy toàn bộ dữ liệu backup hiện tại.
+   * Bao gồm ĐẦY ĐỦ mọi dữ liệu người dùng đang có trong LocalStorage, không
+   * chỉ Bookmark + Vocabulary Progress (bản cũ bỏ sót lessonProgress, streak,
+   * grammar bookmarks/learned và custom flashcard lessons/words — khiến
+   * người dùng mất tiến độ khi chuyển máy/khôi phục backup).
+   * @returns {object} { bookmarks, progress, lessonProgress, streak,
+   *   lastActiveDate, grammarBookmarks, grammarLearned,
+   *   flashcardCustomLessons, flashcardCustomWords }
    */
   function exportBackup() {
+    var activity = getStudyActivity();
     return {
       bookmarks: getAllBookmarks(),
-      progress: getAllVocabularyProgress()
+      progress: getAllVocabularyProgress(),
+      lessonProgress: getAllLessonProgress(),
+      streak: activity.currentStreak,
+      lastActiveDate: activity.lastActiveDate,
+      grammarBookmarks: readJSON(KEYS.GRAMMAR_BOOKMARKS, []),
+      grammarLearned: readJSON(KEYS.GRAMMAR_LEARNED, []),
+      flashcardCustomLessons: readJSON(KEYS.FLASHCARD_CUSTOM_LESSONS, []),
+      flashcardCustomWords: readJSON(KEYS.FLASHCARD_CUSTOM_WORDS, [])
     };
   }
 
   /**
    * Nạp dữ liệu backup vào LocalStorage.
    * Chỉ ghi đè các phần có mặt trong `data` (giữ đúng hành vi cũ:
-   * `if (parsed.bookmarks) ...`, `if (parsed.progress) ...`).
-   * @param {object} data { bookmarks?: Array, progress?: object }
+   * `if (parsed.xxx) ...`) — tương thích ngược với backup cũ (chỉ có
+   * bookmarks/progress) vì các field mới đơn giản bị bỏ qua nếu không có.
+   * @param {object} data { bookmarks?, progress?, lessonProgress?, streak?,
+   *   lastActiveDate?, grammarBookmarks?, grammarLearned?,
+   *   flashcardCustomLessons?, flashcardCustomWords? }
    */
   function importBackup(data) {
     if (!data) {
@@ -461,6 +485,27 @@
     }
     if (data.progress) {
       replaceAllVocabularyProgress(data.progress);
+    }
+    if (data.lessonProgress) {
+      replaceAllLessonProgress(data.lessonProgress);
+    }
+    if (data.streak !== undefined && data.streak !== null) {
+      writeString(KEYS.STUDY_STREAK, String(data.streak));
+    }
+    if (data.lastActiveDate) {
+      writeString(KEYS.LAST_ACTIVE_DATE, data.lastActiveDate);
+    }
+    if (data.grammarBookmarks) {
+      writeJSON(KEYS.GRAMMAR_BOOKMARKS, data.grammarBookmarks);
+    }
+    if (data.grammarLearned) {
+      writeJSON(KEYS.GRAMMAR_LEARNED, data.grammarLearned);
+    }
+    if (data.flashcardCustomLessons) {
+      writeJSON(KEYS.FLASHCARD_CUSTOM_LESSONS, data.flashcardCustomLessons);
+    }
+    if (data.flashcardCustomWords) {
+      writeJSON(KEYS.FLASHCARD_CUSTOM_WORDS, data.flashcardCustomWords);
     }
   }
 

@@ -8,7 +8,7 @@ const fetchHSKData = async (level) => {
 
         const script = document.createElement('script');
         script.id = 'hsk-data-script';
-        script.src = `hsk${level}.js`; 
+        script.src = `data/hsk${level}.js`; 
 
         script.onload = () => {
             setTimeout(() => {

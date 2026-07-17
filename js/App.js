@@ -101,7 +101,7 @@ const App = () => {
 
         const script = document.createElement('script');
         script.id = 'hsk-stories-script';
-        script.src = 'hsk_stories.js';
+        script.src = 'data/hsk_stories.js';
         script.onload = () => {
             console.log("Cơ sở dữ liệu đoạn văn dài được tải thành công.");
         };
@@ -127,7 +127,7 @@ const App = () => {
 
         const script = document.createElement('script');
         script.id = 'hsk-curriculum-script';
-        script.src = 'hsk_curriculum.js';
+        script.src = 'data/hsk_curriculum.js';
         script.onload = () => {
             if (window.hskCurriculumData) {
                 setCurriculumData(window.hskCurriculumData);
@@ -252,15 +252,42 @@ const App = () => {
         setLessonProgress(updated);
     };
 
+    // Danh sách từ vựng đầy đủ theo từng cấp độ (dùng cho thống kê tổng —
+    // Home/Stats — vốn cần dữ liệu của TẤT CẢ cấp độ cùng lúc, khác với
+    // "words" bên dưới chỉ chứa dữ liệu của cấp độ đang active).
+    const [wordsByLevel, setWordsByLevel] = useStateApp(() => ({ ...FALLBACK_VOCABULARY }));
+    const [levelsPreloaded, setLevelsPreloaded] = useStateApp(false);
+
+    // Tải toàn bộ dữ liệu từ vựng HSK 1-4 một lần duy nhất khi mở app.
+    // Tải tuần tự (không song song) vì fetchHSKData dùng chung 1 thẻ
+    // <script> — tải song song sẽ làm các yêu cầu tải đè lên nhau.
     useEffectApp(() => {
-        const loadData = async () => {
+        let cancelled = false;
+        const preloadAllLevels = async () => {
             setLoading(true);
-            const data = await fetchHSKData(activeLevel);
-            setWords(data);
-            setLoading(false);
+            const results = {};
+            for (const lvl of [1, 2, 3, 4]) {
+                results[lvl] = await fetchHSKData(lvl);
+            }
+            results[5] = FALLBACK_VOCABULARY[5] || [];
+            results[6] = FALLBACK_VOCABULARY[6] || [];
+            if (!cancelled) {
+                setWordsByLevel(results);
+                setWords(results[activeLevel] || results[1] || []);
+                setLoading(false);
+                setLevelsPreloaded(true);
+            }
         };
-        loadData();
-    }, [activeLevel]);
+        preloadAllLevels();
+        return () => { cancelled = true; };
+    }, []);
+
+    // Sau khi đã tải xong toàn bộ cấp độ, đổi cấp độ chỉ cần lấy lại từ
+    // cache có sẵn (wordsByLevel) — không cần tải lại qua network/script.
+    useEffectApp(() => {
+        if (!levelsPreloaded) return;
+        setWords(wordsByLevel[activeLevel] || []);
+    }, [activeLevel, levelsPreloaded]);
 
     const exportData = () => {
         const backupObj = window.ProgressService.exportBackup();
@@ -284,6 +311,8 @@ const App = () => {
                     const result = window.ProgressService.importBackup(parsed);
                     setBookmarks(result.bookmarks);
                     setProgress(result.progress);
+                    setLessonProgress(result.lessonProgress);
+                    setStreak(result.streak);
                     showToast("Đã đồng bộ sao lưu dữ liệu thành công!", "success");
                 } catch (err) {
                     showToast("Lỗi! Tệp tin sao lưu không chính xác.", "error");
@@ -494,6 +523,7 @@ const App = () => {
                             bookmarks={bookmarks}
                             curriculumData={curriculumData}
                             words={words}
+                            wordsByLevel={wordsByLevel}
                             activeLevel={activeLevel}
                             streak={streak}
                             lessonProgress={lessonProgress}
@@ -507,6 +537,7 @@ const App = () => {
                         <StatsTab
                             progress={progress}
                             bookmarks={bookmarks}
+                            wordsByLevel={wordsByLevel}
                             onSwitchTab={goToTab}
                             onSwitchLevel={setActiveLevel}
                             streak={streak}

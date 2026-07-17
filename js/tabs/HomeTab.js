@@ -15,6 +15,7 @@ const HomeTab = ({
     bookmarks = [],
     curriculumData = {},
     words = [],
+    wordsByLevel = null,
     activeLevel,
     streak = 0,
     lessonProgress = [],
@@ -36,9 +37,9 @@ const HomeTab = ({
 
     // Thống kê tổng gọn nhẹ (tái sử dụng ProgressService, không thêm logic mới)
     const levelStats = useMemoHome(() => {
-        const vocabSource = (typeof window !== 'undefined' && window.FALLBACK_VOCABULARY) || {};
+        const vocabSource = wordsByLevel || (typeof window !== 'undefined' && window.FALLBACK_VOCABULARY) || {};
         return window.ProgressService.getVocabularyStatisticsByLevel(vocabSource, [1, 2, 3, 4, 5, 6]);
-    }, [progress]);
+    }, [progress, wordsByLevel]);
 
     const todayDateLabel = useMemoHome(() => {
         const days = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];

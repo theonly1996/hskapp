@@ -349,7 +349,9 @@
     window.ProgressStore.importBackup(data);
     return {
       bookmarks: window.ProgressStore.getAllBookmarks(),
-      progress: window.ProgressStore.getAllVocabularyProgress()
+      progress: window.ProgressStore.getAllVocabularyProgress(),
+      lessonProgress: window.ProgressStore.getAllLessonProgress(),
+      streak: window.ProgressStore.getStudyActivity().currentStreak
     };
   }
 
