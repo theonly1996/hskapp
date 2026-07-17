@@ -3,12 +3,15 @@
 // =========================================================================
 const { useState: useStateFlashcard, useEffect: useEffectFlashcard, useMemo: useMemoFlashcard, useCallback: useCallbackFlashcard } = React;
 
-const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStroke, progress, onChangeStatus }) => {
+const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStroke, progress, onChangeStatus, initialLessonId }) => {
     // Chế độ xem: 'flashcard' (Học thẻ) | 'manager' (Quản lý bài học) | 'create_lesson' (Tạo bài mới)
     const [viewMode, setViewMode] = useStateFlashcard('flashcard');
     
-    // Quản lý ID bài học đang học: 'all' (Tất cả), 'bookmarks' (Từ yêu thích) hoặc 'custom_xxx' (Bài tự tạo)
-    const [activeLessonId, setActiveLessonId] = useStateFlashcard('all');
+    // Quản lý ID bài học đang học: 'all' (Tất cả), 'bookmarks' (Từ yêu thích),
+    // '__review_due__' (Từ đang học cần ôn tập hôm nay - từ thẻ "Hôm nay học gì")
+    // hoặc 'custom_xxx' (Bài tự tạo). initialLessonId cho phép App.js mở sẵn
+    // đúng chế độ mong muốn khi mount; không truyền thì giữ nguyên mặc định cũ 'all'.
+    const [activeLessonId, setActiveLessonId] = useStateFlashcard(initialLessonId || 'all');
     
     // State lưu danh sách bài học tự tạo vào LocalStorage để không bị mất khi F5
     const [lessons, setLessons] = useStateFlashcard(() => {
@@ -65,6 +68,9 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
 
         if (activeLessonId === 'bookmarks') {
             baseWords = bookmarks;
+        } else if (activeLessonId === '__review_due__') {
+            // Chế độ "Ôn tập hôm nay": chỉ lấy các từ đang ở trạng thái "learning"
+            baseWords = mergedWords.filter(w => progress[w.id] === 'learning');
         } else if (activeLessonId !== 'all') {
             const currentLesson = lessons.find(l => l.id === activeLessonId);
             if (currentLesson) {
@@ -287,17 +293,7 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
 
     // Tính toán số liệu tiến độ của mỗi bài học
     const getLessonStats = (wordIds) => {
-        const lessonWords = mergedWords.filter(w => wordIds.includes(w.id));
-        let mastered = 0, learning = 0, unlearned = 0;
-        lessonWords.forEach(w => {
-            const stat = progress[w.id] || 'unlearned';
-            if (stat === 'mastered') mastered++;
-            else if (stat === 'learning') learning++;
-            else unlearned++;
-        });
-        const total = lessonWords.length;
-        const percent = total > 0 ? Math.round((mastered / total) * 100) : 0;
-        return { total, mastered, learning, unlearned, percent };
+        return window.ProgressService.getVocabularyStatisticsForSubset(mergedWords, wordIds);
     };
 
     if (loading) return <LoadingScreen message="Đang nạp bộ Flashcard..." />;
@@ -306,6 +302,7 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
     const getActiveLessonName = () => {
         if (activeLessonId === 'all') return 'Tất cả từ vựng';
         if (activeLessonId === 'bookmarks') return 'Từ vựng yêu thích ⭐';
+        if (activeLessonId === '__review_due__') return 'Ôn tập từ đang học hôm nay 🎯';
         return lessons.find(l => l.id === activeLessonId)?.name || 'Bài học tùy chọn';
     };
 
@@ -768,6 +765,8 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
                                             handleResetLessonProgress(e, mergedWords.map(w => w.id));
                                         } else if (activeLessonId === 'bookmarks') {
                                             handleResetLessonProgress(e, bookmarks.map(w => w.id));
+                                        } else if (activeLessonId === '__review_due__') {
+                                            handleResetLessonProgress(e, mergedWords.filter(w => progress[w.id] === 'learning').map(w => w.id));
                                         } else {
                                             const currentLesson = lessons.find(l => l.id === activeLessonId);
                                             if (currentLesson) handleResetLessonProgress(e, currentLesson.wordIds);

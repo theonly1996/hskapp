@@ -5,7 +5,7 @@ const { useState: useStateApp, useEffect: useEffectApp, useMemo: useMemoApp } = 
 
 const App = () => {
     const [activeLevel, setActiveLevel] = useStateApp(1);
-    const [activeTab, setActiveTab] = useStateApp('overview'); 
+    const [activeTab, setActiveTab] = useStateApp('home'); 
     const [words, setWords] = useStateApp([]);
     const [loading, setLoading] = useStateApp(false);
     const [writingWord, setWritingWord] = useStateApp(null);
@@ -23,6 +23,29 @@ const App = () => {
 
     const [curriculumData, setCurriculumData] = useStateApp(FALLBACK_CURRICULUM);
     const [toast, setToast] = useStateApp(null);
+
+    // Điều hướng cho thẻ "Hôm nay học gì" (OverviewTab):
+    // - curriculumJumpTarget: yêu cầu CurriculumTab mở đúng { level, lessonId } khi mount.
+    // - flashcardStartMode: yêu cầu FlashcardTab mở đúng chế độ khi mount
+    //   ('all' mặc định, '__review_due__' khi bấm "Ôn tập ngay").
+    const [curriculumJumpTarget, setCurriculumJumpTarget] = useStateApp(null);
+    const [flashcardStartMode, setFlashcardStartMode] = useStateApp('all');
+
+    const jumpToCurriculumLesson = (level, lessonId) => {
+        setCurriculumJumpTarget({ level, lessonId });
+        setActiveTab('curriculum');
+    };
+
+    const startTodayReview = () => {
+        setFlashcardStartMode('__review_due__');
+        setActiveTab('flashcard');
+    };
+
+    const startTodayNewWords = (level) => {
+        if (typeof level === 'number') setActiveLevel(level);
+        setFlashcardStartMode('all');
+        setActiveTab('flashcard');
+    };
 
     const showToast = (message, type = 'info') => {
         setToast({ message, type });
@@ -159,6 +182,76 @@ const App = () => {
         }
     };
 
+    // TIẾN ĐỘ VỞ BÀI TẬP LUYỆN DỊCH (Lesson Progress): trước đây được quản lý
+    // cục bộ bên trong OverviewTab.js. Nay chuyển lên App.js để cả HomeTab
+    // (tính "Bài học tiếp theo") lẫn StatsTab (bảng theo dõi luyện dịch đầy
+    // đủ) cùng dùng chung MỘT nguồn dữ liệu duy nhất — không đổi logic tính
+    // toán, chỉ đổi nơi lưu state để tránh trùng lặp danh sách mặc định.
+    const [lessonProgress, setLessonProgress] = useStateApp([]);
+
+    useEffectApp(() => {
+        const defaultList = window.hskProData?.defaultProgress || [
+            // HSK 1 (Bài 1 - 15)
+            { lessonId: 1, level: 1, title: "Bài 1: 你好 — Xin chào", isCompleted: false, currentScore: 0 },
+            { lessonId: 2, level: 1, title: "Bài 2: 谢谢你 — Cảm ơn bạn", isCompleted: false, currentScore: 0 },
+            { lessonId: 3, level: 1, title: "Bài 3: 你叫什么名字 — Bạn tên là gì", isCompleted: false, currentScore: 0 },
+            { lessonId: 4, level: 1, title: "Bài 4: 她是我的汉语老师 — Cô ấy là giáo viên", isCompleted: false, currentScore: 0 },
+            { lessonId: 5, level: 1, title: "Bài 5: 她女儿今年二十岁 — Con gái cô ấy 20 tuổi", isCompleted: false, currentScore: 0 },
+            { lessonId: 6, level: 1, title: "Bài 6: 我会 say 汉语 — Tôi biết nói tiếng Trung", isCompleted: false, currentScore: 0 },
+            { lessonId: 7, level: 1, title: "Bài 7: 今天几号 — Hôm nay ngày mấy", isCompleted: false, currentScore: 0 },
+            { lessonId: 8, level: 1, title: "Bài 8: 我想喝茶 — Tôi muốn uống trà", isCompleted: false, currentScore: 0 },
+            { lessonId: 9, level: 1, title: "Bài 9: 你兒子在哪里工作 — Con trai bạn làm việc ở đâu", isCompleted: false, currentScore: 0 },
+            { lessonId: 10, level: 1, title: "Bài 10: 我能坐这儿吗 — Tôi có thể ngồi đây không", isCompleted: false, currentScore: 0 },
+            { lessonId: 11, level: 1, title: "Bài 11: 现在几点 — Bây giờ mấy giờ", isCompleted: false, currentScore: 0 },
+            { lessonId: 12, level: 1, title: "Bài 12: 明天天气怎么样 — Ngày mai thời tiết thế nào", isCompleted: false, currentScore: 0 },
+            { lessonId: 13, level: 1, title: "Bài 13: 他在学做中国菜呢 — Anh ấy đang học nấu ăn", isCompleted: false, currentScore: 0 },
+            { lessonId: 14, level: 1, title: "Bài 14: 她买了不少衣服 — Cô ấy mua không ít quần áo", isCompleted: false, currentScore: 0 },
+            { lessonId: 15, level: 1, title: "Bài 15: 我我是坐飞机来的 — Tôi đi máy bay đến", isCompleted: false, currentScore: 0 },
+
+            // HSK 2 (Bài 16 - 30)
+            { lessonId: 16, level: 2, title: "Bài 16 (H2-B1): 九月去北京旅游 tốt nhất", isCompleted: false, currentScore: 0 },
+            { lessonId: 17, level: 2, title: "Bài 17 (H2-B2): 我每天六点起床", isCompleted: false, currentScore: 0 },
+            { lessonId: 18, level: 2, title: "Bài 18 (H2-B3): 左边那个红色的是 shadow", isCompleted: false, currentScore: 0 },
+            { lessonId: 19, level: 2, title: "Bài 19 (H2-B4): 这个工作是他帮 me", isCompleted: false, currentScore: 0 },
+            { lessonId: 20, level: 2, title: "Bài 20 (H2-B5): 可以这儿写你的名字", isCompleted: false, currentScore: 0 },
+            { lessonId: 21, level: 2, title: "Bài 21 (H2-B6): 你怎么 không chī le", isCompleted: false, currentScore: 0 },
+            { lessonId: 22, level: 2, title: "Bài 22 (H2-B7): 你家离公司远吗", isCompleted: false, currentScore: 0 },
+            { lessonId: 23, level: 2, title: "Bài 23 (H2-B8): 让我想一想再告诉你", isCompleted: false, currentScore: 0 },
+            { lessonId: 24, level: 2, title: "Bài 24 (H2-B9): 题太多，我没做完", isCompleted: false, currentScore: 0 },
+            { lessonId: 25, level: 2, title: "Bài 25 (H2-B10): 别找了，手机在桌子上呢", isCompleted: false, currentScore: 0 },
+            { lessonId: 26, level: 2, title: "Bài 26 (H2-B11): 他比我大三岁", isCompleted: false, currentScore: 0 },
+            { lessonId: 27, level: 2, title: "Bài 27 (H2-B12): 你穿得太少了", isCompleted: false, currentScore: 0 },
+            { lessonId: 28, level: 2, title: "Bài 28 (H2-B13): 门开着呢", isCompleted: false, currentScore: 0 },
+            { lessonId: 29, level: 2, title: "Bài 29 (H2-B14): 你看过那个电影吗", isCompleted: false, currentScore: 0 },
+            { lessonId: 30, level: 2, title: "Bài 30 (H2-B15): 新年快到了", isCompleted: false, currentScore: 0 },
+
+            // HSK 3 (Bài 31 - 45)
+            { lessonId: 31, level: 3, title: "Bài 31 (H3-B1): 周末你有什么打算", isCompleted: false, currentScore: 0 },
+            { lessonId: 32, level: 3, title: "Bài 32 (H3-B2): 他什么时候回来", isCompleted: false, currentScore: 0 },
+            { lessonId: 33, level: 3, title: "Bài 33 (H3-B3): 桌子上放着一杯咖啡", isCompleted: false, currentScore: 0 },
+            { lessonId: 34, level: 3, title: "Bài 34 (H3-B4): 她总是笑眯眯 de", isCompleted: false, currentScore: 0 },
+            { lessonId: 35, level: 3, title: "Bài 35 (H3-B5): 我最近买了一辆 new 车", isCompleted: false, currentScore: 0 },
+            { lessonId: 36, level: 3, title: "Bài 36 (H3-B6): 怎么突然变冷了", isCompleted: false, currentScore: 0 },
+            { lessonId: 37, level: 3, title: "Bài 37 (H3-B7): 我跟他一样高", isCompleted: false, currentScore: 0 },
+            { lessonId: 38, level: 3, title: "Bài 38 (H3-B8): 这里的变化真大", isCompleted: false, currentScore: 0 },
+            { lessonId: 39, level: 3, title: "Bài 39 (H3-B9): 她的汉语越来越好", isCompleted: false, currentScore: 0 },
+            { lessonId: 40, level: 3, title: "Bài 40 (H3-B10): 数学考试难 không", isCompleted: false, currentScore: 0 },
+            { lessonId: 41, level: 3, title: "Bài 41 (H3-B11): 别着急，慢慢来", isCompleted: false, currentScore: 0 },
+            { lessonId: 42, level: 3, title: "Bài 42 (H3-B12): 把书放在桌子上", isCompleted: false, currentScore: 0 },
+            { lessonId: 43, level: 3, title: "Bài 43 (H3-B13): 我习惯了这里的生活", isCompleted: false, currentScore: 0 },
+            { lessonId: 44, level: 3, title: "Bài 44 (H3-B14): 请再检查一下账单", isCompleted: false, currentScore: 0 },
+            { lessonId: 45, level: 3, title: "Bài 45 (H3-B15): 终于把 problem 解决了", isCompleted: false, currentScore: 0 }
+        ];
+
+        const mergedList = window.ProgressService.syncLessonProgress(defaultList);
+        setLessonProgress(mergedList);
+    }, []);
+
+    const handleToggleLesson = (lessonId) => {
+        const updated = window.ProgressService.toggleLessonProgress(lessonId);
+        setLessonProgress(updated);
+    };
+
     useEffectApp(() => {
         const loadData = async () => {
             setLoading(true);
@@ -203,15 +296,34 @@ const App = () => {
         return window.ProgressService.getVocabularyStatistics(words);
     }, [words, progress]);
 
-    const tabs = [
-        { id: 'overview', name: 'Tổng quan', icon: 'fa-chart-pie' },
-        { id: 'curriculum', name: 'Học theo Bài', icon: 'fa-graduation-cap' }, 
+    // ĐIỀU HƯỚNG: chỉ giữ lại 5 mục thiết yếu, dùng hằng ngày ở khu vực chính
+    // (Trang chủ luôn là mục đầu tiên). Các tính năng ít dùng hơn (Ngữ pháp,
+    // Ưu tiên, Thống kê chi tiết) được gom vào menu phụ "Thêm" để giao diện
+    // chính không bị rối.
+    const primaryTabs = [
+        { id: 'home', name: 'Trang chủ', icon: 'fa-house' },
+        { id: 'curriculum', name: 'Học bài', icon: 'fa-graduation-cap' },
         { id: 'dictionary', name: 'Từ vựng', icon: 'fa-book' },
-        { id: 'grammar', name: 'Ngữ pháp', icon: 'fa-layer-group' }, 
-        { id: 'flashcard', name: 'Flashcard', icon: 'fa-clone' },
-        { id: 'quiz', name: 'Trắc nghiệm', icon: 'fa-gamepad' },
-        { id: 'bookmarks', name: 'Ưu tiên', icon: 'fa-star' }
+        { id: 'flashcard', name: 'Flashcard', icon: 'fa-clone' }
     ];
+
+    const secondaryTabs = [
+        { id: 'quiz', name: 'Trắc nghiệm', icon: 'fa-gamepad' },
+        { id: 'grammar', name: 'Ngữ pháp', icon: 'fa-layer-group' },
+        { id: 'bookmarks', name: 'Ưu tiên', icon: 'fa-star' },
+        { id: 'stats', name: 'Thống kê', icon: 'fa-chart-pie' }
+    ];
+
+    const isSecondaryTabActive = secondaryTabs.some(t => t.id === activeTab);
+
+    const [showMoreMenu, setShowMoreMenu] = useStateApp(false);
+    const [showSettingsMenu, setShowSettingsMenu] = useStateApp(false);
+
+    const goToTab = (tabId) => {
+        setActiveTab(tabId);
+        if (tabId === 'flashcard') setFlashcardStartMode('all');
+        setShowMoreMenu(false);
+    };
 
     const zhVoicesList = useMemoApp(() => {
         return availableVoices.filter(v => v.lang.toLowerCase().includes('zh') || v.lang.toLowerCase().includes('cn'));
@@ -223,61 +335,74 @@ const App = () => {
 
     return (
         <>
-            <header className="bg-gradient-to-br from-teal-600 to-teal-800 dark:from-slate-900 dark:to-teal-950 text-white pt-10 pb-6 px-4 md:px-8 rounded-b-[42px] shadow-md mb-6 transition-colors relative overflow-hidden">
-                
+            <header className="bg-gradient-to-br from-teal-600 to-teal-800 dark:from-slate-900 dark:to-teal-950 text-white pt-8 pb-5 px-4 md:px-8 rounded-b-[32px] shadow-md mb-5 transition-colors relative overflow-hidden">
+
                 <div className="absolute top-0 right-0 opacity-10 pointer-events-none transform translate-x-12 -translate-y-6">
-                    <i className="fas fa-seedling text-[200px]"></i>
+                    <i className="fas fa-seedling text-[160px]"></i>
                 </div>
 
-                <div className="flex justify-between items-start mb-6 relative z-10">
-                    <div>
-                        <h1 className="text-xl md:text-2xl font-extrabold flex items-center gap-2">
-                            <i className="fas fa-yin-yang text-teal-200 animate-spin animate-duration-[10s]"></i> Sổ Tay Học HSK Pro
-                        </h1>
-                        <p className="text-teal-100 text-[11px] md:text-xs font-semibold opacity-90 mt-1">
-                            Hệ thống Spaced Repetition (Lặp lại ngắt quãng) & Mẹo Nhớ Từ Toàn Diện
-                        </p>
-                    </div>
-                    
+                <div className="flex justify-between items-center mb-5 relative z-10">
+                    <h1 className="text-lg md:text-xl font-extrabold flex items-center gap-2">
+                        <i className="fas fa-yin-yang text-teal-200"></i> Sổ Tay Học HSK
+                    </h1>
+
                     <div className="flex items-center gap-1.5">
-                        <div className="bg-white/10 px-3 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-bold mr-1" title="Chuỗi ngày học liên tục">
-                            <span className="text-orange-400 animate-pulse">🔥</span>
-                            <span>{streak} Ngày</span>
+                        <div className="bg-white/10 px-3 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-bold" title="Chuỗi ngày học liên tục">
+                            <span className="text-orange-400">🔥</span>
+                            <span>{streak}</span>
                         </div>
-                        
-                        <button 
-                            onClick={() => setShowVoiceSettings(true)}
-                            className="bg-white/10 w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/20 transition-all text-xs shrink-0"
-                            title="Cấu hình giọng nói & tốc độ"
-                        >
-                            <i className="fas fa-sliders-h"></i>
-                        </button>
 
-                        <button 
-                            onClick={exportData}
-                            className="bg-white/10 w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/20 transition-all text-xs shrink-0"
-                            title="Tải tệp sao lưu dữ liệu (.json)"
-                        >
-                            <i className="fas fa-file-export"></i>
-                        </button>
-                        <label 
-                            className="bg-white/10 w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/20 transition-all text-xs cursor-pointer shrink-0"
-                            title="Nhập tệp sao lưu tiến trình (.json)"
-                        >
-                            <i className="fas fa-file-import"></i>
-                            <input type="file" accept=".json" onChange={importData} className="hidden" />
-                        </label>
-                        <button 
-                            onClick={() => setDarkMode(!darkMode)} 
-                            className="bg-white/10 w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/20 transition-all text-xs shrink-0"
-                            title={darkMode ? "Giao diện sáng" : "Giao diện tối"}
-                        >
-                            <i className={`fas ${darkMode ? 'fa-sun text-amber-300' : 'fa-moon'}`}></i>
-                        </button>
+                        {/* MENU CÀI ĐẶT GỘP: thay vì 4 nút rời rạc (giọng đọc / xuất / nhập / sáng-tối),
+                            gộp lại thành 1 nút bánh răng duy nhất để giảm rối mắt trên header. */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowSettingsMenu(v => !v)}
+                                className="bg-white/10 w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/20 transition-all text-xs shrink-0"
+                                title="Cài đặt"
+                            >
+                                <i className="fas fa-gear"></i>
+                            </button>
+
+                            {showSettingsMenu && (
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowSettingsMenu(false)}></div>
+                                    <div className="absolute right-0 top-11 w-60 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 p-1.5 z-50 animate-fade-in">
+                                        <button
+                                            onClick={() => { setDarkMode(!darkMode); }}
+                                            className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold transition-colors"
+                                        >
+                                            <span className="flex items-center gap-2">
+                                                <i className={`fas ${darkMode ? 'fa-sun text-amber-500' : 'fa-moon text-indigo-500'} w-4`}></i>
+                                                Giao diện {darkMode ? 'sáng' : 'tối'}
+                                            </span>
+                                        </button>
+                                        <button
+                                            onClick={() => { setShowVoiceSettings(true); setShowSettingsMenu(false); }}
+                                            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold transition-colors"
+                                        >
+                                            <i className="fas fa-sliders-h w-4 text-teal-600 dark:text-teal-400"></i>
+                                            Giọng đọc &amp; tốc độ
+                                        </button>
+                                        <button
+                                            onClick={() => { exportData(); setShowSettingsMenu(false); }}
+                                            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold transition-colors"
+                                        >
+                                            <i className="fas fa-file-export w-4 text-teal-600 dark:text-teal-400"></i>
+                                            Xuất dữ liệu (.json)
+                                        </button>
+                                        <label className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold transition-colors cursor-pointer">
+                                            <i className="fas fa-file-import w-4 text-teal-600 dark:text-teal-400"></i>
+                                            Nhập dữ liệu (.json)
+                                            <input type="file" accept=".json" onChange={(e) => { importData(e); setShowSettingsMenu(false); }} className="hidden" />
+                                        </label>
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 relative z-10">
+                <div className="flex gap-2 overflow-x-auto hide-scrollbar relative z-10">
                     {[1, 2, 3, 4, 5, 6].map(level => (
                         <button
                             key={level}
@@ -292,53 +417,101 @@ const App = () => {
                         </button>
                     ))}
                 </div>
-
-                <div className="mt-4 bg-black/15 dark:bg-black/30 p-3 rounded-2xl relative z-10 border border-white/5">
-                    <div className="flex justify-between items-center text-[10px] font-bold text-teal-100 mb-1.5 uppercase tracking-wider">
-                        <span>Tiến độ HSK {activeLevel} của phiên học</span>
-                        <span>Đã thuộc: {progressStats.mastered} / {progressStats.total} ({progressStats.masteredPercent}%)</span>
-                    </div>
-                    <div className="w-full bg-black/25 rounded-full h-2.5 overflow-hidden flex">
-                        <div className="bg-emerald-400 h-full rounded-l-full transition-all duration-500" style={{ width: `${progressStats.masteredPercent}%` }} title="Đã thuộc"></div>
-                        <div className="bg-indigo-400 h-full transition-all duration-500" style={{ width: `${progressStats.learningPercent}%` }} title="Đang học"></div>
-                    </div>
-                </div>
             </header>
 
-            <main className="px-4 md:px-6">
-                
-                <div className="flex justify-start md:justify-center mb-6 overflow-x-auto hide-scrollbar">
-                    <div className="bg-white dark:bg-slate-900 p-1.5 rounded-2xl shadow-sm inline-flex border border-slate-100 dark:border-slate-800 min-w-max">
-                        {tabs.map(tab => (
+            <main className="px-4 md:px-6 pb-24 md:pb-6">
+
+                {/* ĐIỀU HƯỚNG DESKTOP: thanh pill ở giữa, chỉ 4 mục thiết yếu + nút "Thêm" */}
+                <div className="hidden md:flex justify-center mb-6">
+                    <div className="bg-white dark:bg-slate-900 p-1.5 rounded-2xl shadow-sm inline-flex items-center border border-slate-100 dark:border-slate-800">
+                        {primaryTabs.map(tab => (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`px-4 sm:px-5 py-2 rounded-xl font-bold flex items-center gap-2 text-xs md:text-sm transition-all ${
+                                onClick={() => goToTab(tab.id)}
+                                className={`px-5 py-2 rounded-xl font-bold flex items-center gap-2 text-sm transition-all ${
                                     activeTab === tab.id 
-                                        ? (tab.id === 'bookmarks' ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 shadow-sm' : 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 shadow-sm') 
+                                        ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 shadow-sm' 
                                         : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
                                 }`}
                             >
-                                <i className={`fas ${tab.icon} ${activeTab === tab.id ? 'animate-bounce' : ''}`}></i>
+                                <i className={`fas ${tab.icon}`}></i>
                                 <span>{tab.name}</span>
-                                {tab.id === 'bookmarks' && bookmarks.length > 0 && (
-                                    <span className="ml-0.5 bg-amber-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold">
-                                        {bookmarks.length}
-                                    </span>
-                                )}
                             </button>
                         ))}
+
+                        <div className="w-px h-5 bg-slate-200 dark:bg-slate-800 mx-1"></div>
+
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowMoreMenu(v => !v)}
+                                className={`px-4 py-2 rounded-xl font-bold flex items-center gap-2 text-sm transition-all ${
+                                    isSecondaryTabActive 
+                                        ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 shadow-sm' 
+                                        : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                                }`}
+                            >
+                                <i className="fas fa-ellipsis"></i>
+                                <span>Thêm</span>
+                                {bookmarks.length > 0 && (
+                                    <span className="bg-amber-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold">{bookmarks.length}</span>
+                                )}
+                            </button>
+
+                            {showMoreMenu && (
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowMoreMenu(false)}></div>
+                                    <div className="absolute right-0 top-11 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 p-1.5 z-50 animate-fade-in">
+                                        {secondaryTabs.map(tab => (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => goToTab(tab.id)}
+                                                className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-colors ${
+                                                    activeTab === tab.id
+                                                        ? (tab.id === 'bookmarks' ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400' : 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400')
+                                                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                                }`}
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <i className={`fas ${tab.icon} w-4`}></i>
+                                                    {tab.name}
+                                                </span>
+                                                {tab.id === 'bookmarks' && bookmarks.length > 0 && (
+                                                    <span className="bg-amber-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold">{bookmarks.length}</span>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 <div className="min-h-[400px]">
-                    {activeTab === 'overview' && (
-                        <OverviewTab 
+                    {activeTab === 'home' && (
+                        <HomeTab
                             progress={progress}
                             bookmarks={bookmarks}
-                            onSwitchTab={setActiveTab}
+                            curriculumData={curriculumData}
+                            words={words}
+                            activeLevel={activeLevel}
+                            streak={streak}
+                            lessonProgress={lessonProgress}
+                            onSwitchTab={goToTab}
+                            onJumpToLesson={jumpToCurriculumLesson}
+                            onStartReview={startTodayReview}
+                            onStartNewWords={startTodayNewWords}
+                        />
+                    )}
+                    {activeTab === 'stats' && (
+                        <StatsTab
+                            progress={progress}
+                            bookmarks={bookmarks}
+                            onSwitchTab={goToTab}
                             onSwitchLevel={setActiveLevel}
                             streak={streak}
+                            lessonProgress={lessonProgress}
+                            onToggleLesson={handleToggleLesson}
                         />
                     )}
                     {activeTab === 'curriculum' && (
@@ -349,6 +522,7 @@ const App = () => {
                             onToggleBookmark={toggleBookmark}
                             onChangeStatus={changeStatus}
                             onShowStroke={setWritingWord}
+                            jumpTarget={curriculumJumpTarget}
                         />
                     )}
                     {activeTab === 'dictionary' && (
@@ -376,6 +550,7 @@ const App = () => {
                             onShowStroke={setWritingWord} 
                             progress={progress}
                             onChangeStatus={changeStatus}
+                            initialLessonId={flashcardStartMode}
                         />
                     )}
                     {activeTab === 'quiz' && (
@@ -395,6 +570,67 @@ const App = () => {
                     )}
                 </div>
             </main>
+
+            {/* ĐIỀU HƯỚNG MOBILE: thanh cố định dưới cùng, 4 mục thiết yếu + "Thêm" —
+                giúp người dùng luôn thấy ngay lối vào Trang chủ / học bài mà không
+                cần cuộn lên đầu trang. */}
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
+                <div className="grid grid-cols-5">
+                    {primaryTabs.map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => goToTab(tab.id)}
+                            className={`flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-bold transition-colors ${
+                                activeTab === tab.id ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400 dark:text-slate-500'
+                            }`}
+                        >
+                            <i className={`fas ${tab.icon} text-base`}></i>
+                            {tab.name}
+                        </button>
+                    ))}
+                    <button
+                        onClick={() => setShowMoreMenu(true)}
+                        className={`relative flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-bold transition-colors ${
+                            isSecondaryTabActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400 dark:text-slate-500'
+                        }`}
+                    >
+                        <i className="fas fa-ellipsis text-base"></i>
+                        Thêm
+                        {bookmarks.length > 0 && (
+                            <span className="absolute top-1 right-6 bg-amber-500 text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{bookmarks.length}</span>
+                        )}
+                    </button>
+                </div>
+            </nav>
+
+            {/* MENU "THÊM" DẠNG BOTTOM-SHEET CHO MOBILE */}
+            {showMoreMenu && (
+                <div className="md:hidden fixed inset-0 z-50 flex items-end" onClick={() => setShowMoreMenu(false)}>
+                    <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm animate-fade-in"></div>
+                    <div className="relative w-full bg-white dark:bg-slate-900 rounded-t-3xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl animate-fade-in" onClick={e => e.stopPropagation()}>
+                        <div className="w-10 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-4"></div>
+                        <div className="grid grid-cols-4 gap-2">
+                            {secondaryTabs.map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => goToTab(tab.id)}
+                                    className={`relative flex flex-col items-center justify-center gap-2 p-3 rounded-2xl text-[11px] font-bold transition-colors ${
+                                        activeTab === tab.id
+                                            ? (tab.id === 'bookmarks' ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400' : 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400')
+                                            : 'bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300'
+                                    }`}
+                                >
+                                    <i className={`fas ${tab.icon} text-lg`}></i>
+                                    {tab.name}
+                                    {tab.id === 'bookmarks' && bookmarks.length > 0 && (
+                                        <span className="absolute top-1 right-1 bg-amber-500 text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{bookmarks.length}</span>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {writingWord && <StrokeModal word={writingWord} onClose={() => setWritingWord(null)} />}
 

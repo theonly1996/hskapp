@@ -53,6 +53,24 @@
   }
 
   /**
+   * Tính thống kê Vocabulary Progress cho một tập con từ vựng, được chọn
+   * ra từ một danh sách id.
+   * Phase 1C - Step 2: nạp dữ liệu thô từ ProgressStore rồi uỷ quyền phép
+   * tính cho StatisticsService.calculateVocabularyStatsForSubset. Đây là
+   * hàm duy nhất mà FlashcardTab.js được phép gọi để lấy thống kê theo
+   * một tập con từ vựng (ví dụ theo một Flashcard lesson).
+   *
+   * @param {Array} words Danh sách từ vựng đầy đủ để lọc ra tập con cần
+   *   tính (tương đương mergedWords của FlashcardTab).
+   * @param {Array} wordIds Danh sách id cần lọc ra từ `words`.
+   * @returns {object} { total, mastered, learning, unlearned, percent }
+   */
+  function getVocabularyStatisticsForSubset(words, wordIds) {
+    var progress = window.ProgressStore.getAllVocabularyProgress();
+    return window.StatisticsService.calculateVocabularyStatsForSubset(progress, words, wordIds);
+  }
+
+  /**
    * Lọc ra các từ có trạng thái "mastered".
    * @param {Array} words
    * @returns {Array}
@@ -342,6 +360,7 @@
   window.ProgressService = {
     getVocabularyStatistics: getVocabularyStatistics,
     getVocabularyStatisticsByLevel: getVocabularyStatisticsByLevel,
+    getVocabularyStatisticsForSubset: getVocabularyStatisticsForSubset,
     getMasteredWords: getMasteredWords,
     getLearningWords: getLearningWords,
     getUnlearnedWords: getUnlearnedWords,

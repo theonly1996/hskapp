@@ -271,6 +271,88 @@ Phase 1B được xem là hoàn thành từ thời điểm này (2026-07-09).
 
 ---
 
+# Version 0.5.0
+
+Ngày: 2026-07-10
+
+### Mục tiêu
+
+Phase 1C - FlashcardTab Statistics Consolidation. Giải quyết Technical
+Debt duy nhất còn tồn đọng ghi nhận tại
+`docs/audits/AUDIT_REPORT_PHASE_1B_FINAL.md` (mục 5) và
+`docs/audits/TECHNICAL_REVIEW_FLASHCARD_STATS.md`: hợp nhất
+`FlashcardTab.getLessonStats()` — bản sao thứ 3 của công thức tính
+Vocabulary Statistics trong repository — vào `StatisticsService`, để
+`StatisticsService` là nơi duy nhất định nghĩa "thế nào là mastered /
+learning / unlearned" và công thức tính phần trăm trên toàn bộ ứng dụng.
+
+### File đã sửa
+
+- js/services/StatisticsService.js
+
+- js/services/ProgressService.js
+
+- js/tabs/FlashcardTab.js
+
+### File mới
+
+Không có.
+
+### Tính năng
+
+- `StatisticsService.calculateVocabularyStatsForSubset(progress, words, wordIds)`:
+  pure function, không side effect, không gọi Store, không đọc
+  localStorage, không phụ thuộc biến toàn cục. Giữ nguyên byte-for-byte
+  công thức gốc của `FlashcardTab.getLessonStats`, kể cả cách xử lý
+  `total = 0` (rẽ nhánh trả về 0%, không dùng `total || 1`).
+
+- `ProgressService.getVocabularyStatisticsForSubset(words, wordIds)`:
+  hàm mới, điều phối Store → StatisticsService, theo đúng pattern của
+  `getVocabularyStatistics` và `getVocabularyStatisticsByLevel`.
+
+### Refactor
+
+- `FlashcardTab.getLessonStats(wordIds)`: không còn tự tính
+  mastered/learning/unlearned/percent, chỉ còn gọi
+  `window.ProgressService.getVocabularyStatisticsForSubset(mergedWords, wordIds)`
+  và trả nguyên kết quả. Chữ ký hàm, cấu trúc object trả về
+  (`{ total, mastered, learning, unlearned, percent }`), và cả 3 vị trí
+  gọi hàm (thẻ "Học tất cả từ vựng", "Từ vựng yêu thích", từng bài học tự
+  tạo) giữ nguyên 100%, không đổi JSX.
+
+### Bug Fix
+
+Không có.
+
+### Breaking Change
+
+Không. Public API của `ProgressStore` không đổi. `StatisticsService` có
+thêm 1 hàm mới (`calculateVocabularyStatsForSubset`), tổng 3 hàm public.
+`ProgressService` có thêm 1 hàm mới (`getVocabularyStatisticsForSubset`),
+tổng 21 hàm public, không hàm cũ nào bị đổi tên/chữ ký/giá trị trả về.
+Output UI tại 3 vị trí trong FlashcardTab giữ nguyên 100% trước và sau
+Phase 1C.
+
+### Ghi chú
+
+Final Audit (Step 4) kết luận PASS về mặt source code, không có Blocking
+issue, không phát sinh Technical Debt code mới. Repository-wide grep xác
+nhận `mastered++`/`learning++`/`unlearned++` chỉ còn tồn tại trong
+`StatisticsService.js` — không còn Component hay Service nào khác tự
+viết lại công thức tính Vocabulary Statistics. Chi tiết đầy đủ trong
+docs/audits/AUDIT_REPORT_PHASE_1C_FINAL.md.
+
+Audit có ghi nhận 2 finding về tài liệu (`docs/PHASE_1C_DESIGN.md` khi đó
+còn để `Status: Draft`; `README.md` và `docs/ROADMAP.md` có dấu hiệu nội
+dung không đúng) — finding thứ nhất đã được Project Owner xác nhận và xử
+lý trong đợt Documentation Sync này; finding thứ hai (`README.md`,
+`docs/ROADMAP.md`) tạm thời giữ nguyên, chưa đủ bằng chứng kết luận, chờ
+điều tra riêng.
+
+Phase 1C được xem là hoàn thành từ thời điểm này (2026-07-10).
+
+---
+
 # Template
 
 ## Version x.x.x

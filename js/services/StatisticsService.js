@@ -130,12 +130,69 @@
     };
   }
 
+  /**
+   * Tính thống kê Vocabulary Progress cho một tập con từ vựng, được chọn
+   * ra từ một danh sách id (`wordIds`).
+   * Phase 1C - Step 1: di chuyển nguyên logic hiện có trong
+   * FlashcardTab.getLessonStats (dòng 289-301 của FlashcardTab.js trước
+   * Phase 1C), giữ nguyên công thức tuyệt đối, kể cả cách xử lý trường
+   * hợp `total = 0` (rẽ nhánh trả về 0, KHÔNG dùng `total || 1` như
+   * calculateVocabularyStats ở trên) — để không làm sai lệch hành vi so
+   * với bản gốc.
+   *
+   * @param {object} progress Dữ liệu Vocabulary Progress thô,
+   *   { [wordId]: "unlearned" | "learning" | "mastered" }.
+   * @param {Array} words Danh sách từ vựng đầy đủ để lọc ra tập con cần
+   *   tính (tương đương mergedWords của FlashcardTab), mỗi phần tử có ít
+   *   nhất trường `id`.
+   * @param {Array} wordIds Danh sách id cần lọc ra từ `words` để tính
+   *   thống kê (tương đương wordIds của một Flashcard lesson).
+   * @returns {{total: number, mastered: number, learning: number,
+   *   unlearned: number, percent: number}}
+   */
+  function calculateVocabularyStatsForSubset(progress, words, wordIds) {
+    var prog = progress || {};
+    var wordList = words || [];
+    var idList = wordIds || [];
+
+    var lessonWords = wordList.filter(function (w) {
+      return idList.indexOf(w.id) !== -1;
+    });
+
+    var mastered = 0;
+    var learning = 0;
+    var unlearned = 0;
+
+    lessonWords.forEach(function (w) {
+      var stat = prog[w.id] || "unlearned";
+      if (stat === "mastered") {
+        mastered++;
+      } else if (stat === "learning") {
+        learning++;
+      } else {
+        unlearned++;
+      }
+    });
+
+    var total = lessonWords.length;
+    var percent = total > 0 ? Math.round((mastered / total) * 100) : 0;
+
+    return {
+      total: total,
+      mastered: mastered,
+      learning: learning,
+      unlearned: unlearned,
+      percent: percent
+    };
+  }
+
   // ---------------------------------------------------------------------
   // Expose public API qua window.StatisticsService
   // ---------------------------------------------------------------------
 
   window.StatisticsService = {
     calculateVocabularyStats: calculateVocabularyStats,
-    calculateVocabularyStatsByLevel: calculateVocabularyStatsByLevel
+    calculateVocabularyStatsByLevel: calculateVocabularyStatsByLevel,
+    calculateVocabularyStatsForSubset: calculateVocabularyStatsForSubset
   };
 })();

@@ -1,12 +1,17 @@
 // =========================================================================
-// TAB: TỔNG QUAN (DASHBOARD - BIỂU ĐỒ, THỐNG KÊ CHI TIẾT & BẢNG TIẾN ĐỘ LUYỆN DỊCH HSK 1 - 3)
+// TAB: THỐNG KÊ (DASHBOARD CHI TIẾT - BIỂU ĐỒ, BẢNG TIẾN ĐỘ LUYỆN DỊCH & CẨM NANG BỘ THỦ)
+// Đây là phần "đào sâu" dành cho người dùng muốn xem chi tiết, tách khỏi màn
+// hình Trang chủ (HomeTab.js) để Trang chủ luôn gọn và tập trung vào hành
+// động học tiếp theo. Toàn bộ logic/dữ liệu bên dưới được giữ NGUYÊN so với
+// bản OverviewTab gốc, chỉ khác là "lessonProgress" & việc đổi trạng thái bài
+// luyện dịch nay được App.js quản lý và truyền xuống qua props (dùng chung
+// với HomeTab để tránh trùng lặp danh sách mặc định 45 bài học).
 // =========================================================================
-const { useMemo: useMemoOverview, useState: useStateOverview, useEffect: useEffectOverview } = React;
+const { useMemo: useMemoOverview, useState: useStateOverview } = React;
 
-const OverviewTab = ({ progress = {}, bookmarks = [], onSwitchTab, onSwitchLevel, streak = 0, curriculumData = {}, words = [], activeLevel, onJumpToLesson, onStartReview, onStartNewWords }) => {
+const StatsTab = ({ progress = {}, bookmarks = [], onSwitchTab, onSwitchLevel, streak = 0, lessonProgress = [], onToggleLesson }) => {
     const allLevels = [1, 2, 3, 4, 5, 6];
 
-    const [translationProgress, setTranslationProgress] = useStateOverview([]);
     const [selectedTranslationLevel, setSelectedTranslationLevel] = useStateOverview('all');
 
     // Các trạng thái phục vụ tính năng Cẩm nang Bộ thủ nâng cao
@@ -22,96 +27,6 @@ const OverviewTab = ({ progress = {}, bookmarks = [], onSwitchTab, onSwitchLevel
     const [wrongPair, setWrongPair] = useStateOverview([]); // Cặp thẻ bài ghép sai tạm thời hiển thị đỏ
     const [matchedCount, setMatchedCount] = useStateOverview(0); // Số cặp đã ghép đúng thành công
     const [gameStatus, setGameStatus] = useStateOverview('idle'); // 'idle', 'playing', 'won'
-
-    useEffectOverview(() => {
-        const defaultList = window.hskProData?.defaultProgress || [
-            // HSK 1 (Bài 1 - 15)
-            { lessonId: 1, level: 1, title: "Bài 1: 你好 — Xin chào", isCompleted: false, currentScore: 0 },
-            { lessonId: 2, level: 1, title: "Bài 2: 谢谢你 — Cảm ơn bạn", isCompleted: false, currentScore: 0 },
-            { lessonId: 3, level: 1, title: "Bài 3: 你叫什么名字 — Bạn tên là gì", isCompleted: false, currentScore: 0 },
-            { lessonId: 4, level: 1, title: "Bài 4: 她是我的汉语老师 — Cô ấy là giáo viên", isCompleted: false, currentScore: 0 },
-            { lessonId: 5, level: 1, title: "Bài 5: 她女儿今年二十岁 — Con gái cô ấy 20 tuổi", isCompleted: false, currentScore: 0 },
-            { lessonId: 6, level: 1, title: "Bài 6: 我会 say 汉语 — Tôi biết nói tiếng Trung", isCompleted: false, currentScore: 0 },
-            { lessonId: 7, level: 1, title: "Bài 7: 今天几号 — Hôm nay ngày mấy", isCompleted: false, currentScore: 0 },
-            { lessonId: 8, level: 1, title: "Bài 8: 我想喝茶 — Tôi muốn uống trà", isCompleted: false, currentScore: 0 },
-            { lessonId: 9, level: 1, title: "Bài 9: 你兒子在哪里工作 — Con trai bạn làm việc ở đâu", isCompleted: false, currentScore: 0 },
-            { lessonId: 10, level: 1, title: "Bài 10: 我能坐这儿吗 — Tôi có thể ngồi đây không", isCompleted: false, currentScore: 0 },
-            { lessonId: 11, level: 1, title: "Bài 11: 现在几点 — Bây giờ mấy giờ", isCompleted: false, currentScore: 0 },
-            { lessonId: 12, level: 1, title: "Bài 12: 明天天气怎么样 — Ngày mai thời tiết thế nào", isCompleted: false, currentScore: 0 },
-            { lessonId: 13, level: 1, title: "Bài 13: 他在学做中国菜呢 — Anh ấy đang học nấu ăn", isCompleted: false, currentScore: 0 },
-            { lessonId: 14, level: 1, title: "Bài 14: 她买了不少衣服 — Cô ấy mua không ít quần áo", isCompleted: false, currentScore: 0 },
-            { lessonId: 15, level: 1, title: "Bài 15: 我我是坐飞机来的 — Tôi đi máy bay đến", isCompleted: false, currentScore: 0 },
-            
-            // HSK 2 (Bài 16 - 30)
-            { lessonId: 16, level: 2, title: "Bài 16 (H2-B1): 九月去北京旅游 tốt nhất", isCompleted: false, currentScore: 0 },
-            { lessonId: 17, level: 2, title: "Bài 17 (H2-B2): 我每天六点起床", isCompleted: false, currentScore: 0 },
-            { lessonId: 18, level: 2, title: "Bài 18 (H2-B3): 左边那个红色的是 shadow", isCompleted: false, currentScore: 0 },
-            { lessonId: 19, level: 2, title: "Bài 19 (H2-B4): 这个工作是他帮 me", isCompleted: false, currentScore: 0 },
-            { lessonId: 20, level: 2, title: "Bài 20 (H2-B5): 可以这儿写你的名字", isCompleted: false, currentScore: 0 },
-            { lessonId: 21, level: 2, title: "Bài 21 (H2-B6): 你怎么 không chī le", isCompleted: false, currentScore: 0 },
-            { lessonId: 22, level: 2, title: "Bài 22 (H2-B7): 你家离公司远吗", isCompleted: false, currentScore: 0 },
-            { lessonId: 23, level: 2, title: "Bài 23 (H2-B8): 让我想一想再告诉你", isCompleted: false, currentScore: 0 },
-            { lessonId: 24, level: 2, title: "Bài 24 (H2-B9): 题太多，我没做完", isCompleted: false, currentScore: 0 },
-            { lessonId: 25, level: 2, title: "Bài 25 (H2-B10): 别找了，手机在桌子上呢", isCompleted: false, currentScore: 0 },
-            { lessonId: 26, level: 2, title: "Bài 26 (H2-B11): 他比我大三岁", isCompleted: false, currentScore: 0 },
-            { lessonId: 27, level: 2, title: "Bài 27 (H2-B12): 你穿得太少了", isCompleted: false, currentScore: 0 },
-            { lessonId: 28, level: 2, title: "Bài 28 (H2-B13): 门开着呢", isCompleted: false, currentScore: 0 },
-            { lessonId: 29, level: 2, title: "Bài 29 (H2-B14): 你看过那个电影吗", isCompleted: false, currentScore: 0 },
-            { lessonId: 30, level: 2, title: "Bài 30 (H2-B15): 新年快到了", isCompleted: false, currentScore: 0 },
-            
-            // HSK 3 (Bài 31 - 45)
-            { lessonId: 31, level: 3, title: "Bài 31 (H3-B1): 周末你有什么打算", isCompleted: false, currentScore: 0 },
-            { lessonId: 32, level: 3, title: "Bài 32 (H3-B2): 他什么时候回来", isCompleted: false, currentScore: 0 },
-            { lessonId: 33, level: 3, title: "Bài 33 (H3-B3): 桌子上放着一杯咖啡", isCompleted: false, currentScore: 0 },
-            { lessonId: 34, level: 3, title: "Bài 34 (H3-B4): 她总是笑眯眯 de", isCompleted: false, currentScore: 0 },
-            { lessonId: 35, level: 3, title: "Bài 35 (H3-B5): 我最近买了一辆 new 车", isCompleted: false, currentScore: 0 },
-            { lessonId: 36, level: 3, title: "Bài 36 (H3-B6): 怎么突然变冷了", isCompleted: false, currentScore: 0 },
-            { lessonId: 37, level: 3, title: "Bài 37 (H3-B7): 我跟他一样高", isCompleted: false, currentScore: 0 },
-            { lessonId: 38, level: 3, title: "Bài 38 (H3-B8): 这里的变化真大", isCompleted: false, currentScore: 0 },
-            { lessonId: 39, level: 3, title: "Bài 39 (H3-B9): 她的汉语越来越好", isCompleted: false, currentScore: 0 },
-            { lessonId: 40, level: 3, title: "Bài 40 (H3-B10): 数学考试难 không", isCompleted: false, currentScore: 0 },
-            { lessonId: 41, level: 3, title: "Bài 41 (H3-B11): 别着急，慢慢来", isCompleted: false, currentScore: 0 },
-            { lessonId: 42, level: 3, title: "Bài 42 (H3-B12): 把书放在桌子上", isCompleted: false, currentScore: 0 },
-            { lessonId: 43, level: 3, title: "Bài 43 (H3-B13): 我习惯了这里的生活", isCompleted: false, currentScore: 0 },
-            { lessonId: 44, level: 3, title: "Bài 44 (H3-B14): 请再检查一下账单", isCompleted: false, currentScore: 0 },
-            { lessonId: 45, level: 3, title: "Bài 45 (H3-B15): 终于把 problem 解决了", isCompleted: false, currentScore: 0 }
-        ];
-
-        const mergedList = window.ProgressService.syncLessonProgress(defaultList);
-        setTranslationProgress(mergedList);
-    }, []);
-
-    const handleToggleLesson = (lessonId) => {
-        const updated = window.ProgressService.toggleLessonProgress(lessonId);
-        setTranslationProgress(updated);
-    };
-
-    // KẾ HOẠCH HỌC HÔM NAY: trả lời "Mở app lên là biết ngay hôm nay phải học gì".
-    // Phụ thuộc translationProgress (đã đồng bộ ở trên) + curriculumData (bài học &
-    // vocab) + words (từ điển cấp độ đang active) + progress (trạng thái học từng từ).
-    const todayPlan = useMemoOverview(() => {
-        return window.TodayPlanService.buildTodayStudyPlan({
-            progress,
-            curriculumData,
-            lessonProgress: translationProgress,
-            dictionaryWords: words,
-            activeLevel
-        });
-    }, [progress, curriculumData, translationProgress, words, activeLevel]);
-
-    const handleGoToTodayLesson = () => {
-        if (todayPlan.nextLesson && typeof onJumpToLesson === 'function') {
-            onJumpToLesson(todayPlan.nextLesson.level, todayPlan.nextLesson.localLessonId);
-        }
-    };
-
-    const handleStartTodayReview = () => {
-        if (typeof onStartReview === 'function') onStartReview();
-    };
-
-    const handleStartTodayNewWords = () => {
-        if (typeof onStartNewWords === 'function') onStartNewWords(activeLevel);
-    };
 
     const levelStats = useMemoOverview(() => {
         const vocabSource = typeof window !== 'undefined' && window.FALLBACK_VOCABULARY 
@@ -158,12 +73,12 @@ const OverviewTab = ({ progress = {}, bookmarks = [], onSwitchTab, onSwitchLevel
     }, [coreRadicals, selectedRadicalLevel, radicalSearchQuery]);
 
     const filteredTranslation = useMemoOverview(() => {
-        if (selectedTranslationLevel === 'all') return translationProgress;
-        return translationProgress.filter(item => {
+        if (selectedTranslationLevel === 'all') return lessonProgress;
+        return lessonProgress.filter(item => {
             const itemLevel = item.level || (item.lessonId <= 15 ? 1 : item.lessonId <= 30 ? 2 : 3);
             return itemLevel === Number(selectedTranslationLevel);
         });
-    }, [translationProgress, selectedTranslationLevel]);
+    }, [lessonProgress, selectedTranslationLevel]);
 
     const handleLevelSelect = (levelNum) => {
         if (typeof onSwitchLevel === 'function') onSwitchLevel(levelNum);
@@ -272,101 +187,6 @@ const OverviewTab = ({ progress = {}, bookmarks = [], onSwitchTab, onSwitchLevel
 
     return (
         <div className="animate-fade-in space-y-6">
-            {/* KẾ HOẠCH HỌC HÔM NAY - luôn là khối đầu tiên, trả lời ngay "hôm nay học gì" */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black text-white p-5 md:p-6 rounded-3xl shadow-md border border-slate-700/40 space-y-4">
-                <div className="flex items-center gap-2">
-                    <span className="text-2xl">🎯</span>
-                    <div>
-                        <h3 className="text-sm md:text-base font-extrabold">Hôm nay bạn nên học gì?</h3>
-                        <p className="text-[11px] text-slate-300">Kế hoạch được gợi ý tự động dựa trên tiến độ hiện tại của bạn.</p>
-                    </div>
-                </div>
-
-                {!todayPlan.hasAnyTaskToday ? (
-                    <div className="bg-white/10 rounded-2xl p-4 text-center">
-                        <p className="text-sm font-bold">🎉 Xuất sắc! Bạn đã hoàn thành toàn bộ nội dung hiện có.</p>
-                        <p className="text-[11px] text-slate-300 mt-1">Hãy thử chuyển sang cấp độ HSK cao hơn hoặc ôn lại các từ đã thuộc.</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {/* BÀI HỌC TIẾP THEO */}
-                        <div className="bg-white/10 rounded-2xl p-4 flex flex-col justify-between gap-3">
-                            <div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-300">Bài học tiếp theo</span>
-                                {todayPlan.nextLesson ? (
-                                    <>
-                                        <h5 className="font-bold text-sm mt-1 leading-snug">{todayPlan.nextLesson.title}</h5>
-                                        <p className="text-[11px] text-slate-300 mt-1">
-                                            {todayPlan.nextLesson.vocabRemaining}/{todayPlan.nextLesson.vocabTotal} từ mới trong bài
-                                        </p>
-                                    </>
-                                ) : (
-                                    <p className="text-[11px] text-slate-300 mt-1">Bạn đã hoàn thành hết các bài học theo giáo trình 🎉</p>
-                                )}
-                            </div>
-                            {todayPlan.nextLesson && (
-                                <button
-                                    onClick={handleGoToTodayLesson}
-                                    className="w-full py-2 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-xs rounded-xl transition-all active:scale-95"
-                                >
-                                    Vào học ngay <i className="fas fa-arrow-right ml-1"></i>
-                                </button>
-                            )}
-                        </div>
-
-                        {/* ÔN TẬP TỪ ĐANG HỌC */}
-                        <div className="bg-white/10 rounded-2xl p-4 flex flex-col justify-between gap-3">
-                            <div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300">Ôn tập từ vựng</span>
-                                <h5 className="font-bold text-sm mt-1 leading-snug">
-                                    {todayPlan.reviewWords.total > 0
-                                        ? `${todayPlan.reviewWords.total} từ đang học (HSK ${activeLevel}) cần ôn lại`
-                                        : `Chưa có từ nào đang học ở HSK ${activeLevel}`}
-                                </h5>
-                                {todayPlan.reviewWords.sample.length > 0 && (
-                                    <p className="text-[11px] text-slate-300 mt-1 truncate">
-                                        {todayPlan.reviewWords.sample.map(w => w.word).join(' · ')}
-                                    </p>
-                                )}
-                            </div>
-                            {todayPlan.reviewWords.total > 0 && (
-                                <button
-                                    onClick={handleStartTodayReview}
-                                    className="w-full py-2 bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs rounded-xl transition-all active:scale-95"
-                                >
-                                    Ôn tập ngay <i className="fas fa-arrow-right ml-1"></i>
-                                </button>
-                            )}
-                        </div>
-
-                        {/* TỪ MỚI NÊN HỌC */}
-                        <div className="bg-white/10 rounded-2xl p-4 flex flex-col justify-between gap-3">
-                            <div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">Từ vựng mới</span>
-                                <h5 className="font-bold text-sm mt-1 leading-snug">
-                                    {todayPlan.newWords.total > 0
-                                        ? `Gợi ý học thêm ${todayPlan.newWords.suggestedCount} từ mới (HSK ${activeLevel})`
-                                        : `Đã học hết từ vựng HSK ${activeLevel}`}
-                                </h5>
-                                {todayPlan.newWords.sample.length > 0 && (
-                                    <p className="text-[11px] text-slate-300 mt-1 truncate">
-                                        {todayPlan.newWords.sample.slice(0, 5).map(w => w.word).join(' · ')}
-                                    </p>
-                                )}
-                            </div>
-                            {todayPlan.newWords.total > 0 && (
-                                <button
-                                    onClick={handleStartTodayNewWords}
-                                    className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold text-xs rounded-xl transition-all active:scale-95"
-                                >
-                                    Học từ mới <i className="fas fa-arrow-right ml-1"></i>
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </div>
-
             {/* KHỐI CHUỖI NGÀY HỌC & ĐỘNG LỰC */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-gradient-to-br from-amber-500 to-orange-600 text-white p-5 rounded-3xl shadow-sm border border-amber-400/20 flex items-center justify-between">
@@ -472,7 +292,7 @@ const OverviewTab = ({ progress = {}, bookmarks = [], onSwitchTab, onSwitchLevel
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
                     <div>
                         <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                            <i className="fas fa-tasks text-emerald-600"></i> Vở Bài Tập Luyện Dịch HSK (Tổng số {translationProgress.length} Bài)
+                            <i className="fas fa-tasks text-emerald-600"></i> Vở Bài Tập Luyện Dịch HSK (Tổng số {lessonProgress.length} Bài)
                         </h4>
                         <p className="text-[11px] text-slate-400 dark:text-slate-500">Học dịch chuyên sâu kèm hệ thống ngữ pháp và bộ thủ hỗ trợ thực hành.</p>
                     </div>
@@ -535,7 +355,7 @@ const OverviewTab = ({ progress = {}, bookmarks = [], onSwitchTab, onSwitchLevel
                                 <input 
                                     type="checkbox" 
                                     checked={item.isCompleted} 
-                                    onChange={() => handleToggleLesson(item.lessonId)}
+                                    onChange={() => onToggleLesson && onToggleLesson(item.lessonId)}
                                     className="w-4.5 h-4.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:bg-slate-800 dark:border-slate-700 cursor-pointer flex-shrink-0"
                                 />
                                 <span className={`text-xs font-bold truncate transition-all ${
@@ -835,4 +655,4 @@ const OverviewTab = ({ progress = {}, bookmarks = [], onSwitchTab, onSwitchLevel
 };
 
 // Gán biến toàn cục để Index.html có thể truy cập qua React CDN
-window.OverviewTab = OverviewTab;
+window.StatsTab = StatsTab;

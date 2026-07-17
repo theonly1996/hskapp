@@ -3,9 +3,17 @@
 // =========================================================================
 const { useState: useStateCurriculum, useMemo: useMemoCurriculum, useEffect: useEffectCurriculum } = React;
 
-const CurriculumTab = ({ curriculumData, progress, bookmarks, onToggleBookmark, onChangeStatus, onShowStroke }) => {
-    const [curLevel, setCurLevel] = useStateCurriculum(1); 
-    const [selectedIdx, setSelectedIdx] = useStateCurriculum(0); 
+const CurriculumTab = ({ curriculumData, progress, bookmarks, onToggleBookmark, onChangeStatus, onShowStroke, jumpTarget }) => {
+    // Nếu App.js truyền jumpTarget (ví dụ từ thẻ "Hôm nay học gì" ở Tổng quan),
+    // mở đúng cấp độ + bài học đó ngay khi mount. Không có jumpTarget thì giữ
+    // nguyên hành vi mặc định cũ: Cấp độ 1, bài đầu tiên.
+    const [curLevel, setCurLevel] = useStateCurriculum(() => (jumpTarget && jumpTarget.level) || 1);
+    const [selectedIdx, setSelectedIdx] = useStateCurriculum(() => {
+        if (!jumpTarget) return 0;
+        const levelLessons = (curriculumData && curriculumData[jumpTarget.level]) || [];
+        const idx = levelLessons.findIndex(les => les.lessonId === jumpTarget.lessonId);
+        return idx >= 0 ? idx : 0;
+    }); 
     const [quizAnswers, setQuizAnswers] = useStateCurriculum({});
     const [quizChecked, setQuizChecked] = useStateCurriculum(false);
     const [quizScore, setQuizScore] = useStateCurriculum(null);
