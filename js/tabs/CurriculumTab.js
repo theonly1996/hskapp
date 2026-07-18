@@ -3,15 +3,29 @@
 // =========================================================================
 const { useState: useStateCurriculum, useMemo: useMemoCurriculum, useEffect: useEffectCurriculum } = React;
 
-const CurriculumTab = ({ curriculumData, progress, bookmarks, lessonProgress = [], onToggleBookmark, onChangeStatus, onShowStroke, onCompleteLesson, jumpTarget }) => {
-    // Nếu App.js truyền jumpTarget (ví dụ từ thẻ "Hôm nay học gì" ở Tổng quan),
-    // mở đúng cấp độ + bài học đó ngay khi mount. Không có jumpTarget thì giữ
-    // nguyên hành vi mặc định cũ: Cấp độ 1, bài đầu tiên.
-    const [curLevel, setCurLevel] = useStateCurriculum(() => (jumpTarget && jumpTarget.level) || 1);
+const CurriculumTab = ({ curriculumData, progress, bookmarks, lessonProgress = [], onToggleBookmark, onChangeStatus, onShowStroke, onCompleteLesson, jumpTarget, onSwitchTab }) => {
+    // BUGFIX (Bug #1): nếu App.js truyền jumpTarget (từ CTA "Vào học ngay" ở
+    // Home), mở đúng cấp độ + bài học đó — hành vi này giữ nguyên 100%.
+    // Nếu KHÔNG có jumpTarget (mở tab "Học bài" trực tiếp từ thanh điều
+    // hướng), trước đây mặc định cứng về Cấp độ 1 - Bài 1 bất kể tiến độ.
+    // Nay tự suy ra bài học tiếp theo CHƯA hoàn thành từ lessonProgress
+    // (cùng công thức quy đổi lessonId toàn cục <-> nội bộ đang dùng trong
+    // file này: LESSONS_PER_LEVEL = 15). Nếu lessonProgress rỗng hoặc đã
+    // hoàn thành hết, fallback về đúng hành vi cũ (Cấp độ 1, bài đầu tiên).
+    const resolvedInitialTarget = jumpTarget || (() => {
+        const sortedProgress = (lessonProgress || []).slice().sort((a, b) => a.lessonId - b.lessonId);
+        const nextEntry = sortedProgress.find(l => !l.isCompleted);
+        if (!nextEntry) return null;
+        const level = nextEntry.level || 1;
+        const localLessonId = nextEntry.lessonId - 15 * (level - 1);
+        return { level, lessonId: localLessonId };
+    })();
+
+    const [curLevel, setCurLevel] = useStateCurriculum(() => (resolvedInitialTarget && resolvedInitialTarget.level) || 1);
     const [selectedIdx, setSelectedIdx] = useStateCurriculum(() => {
-        if (!jumpTarget) return 0;
-        const levelLessons = (curriculumData && curriculumData[jumpTarget.level]) || [];
-        const idx = levelLessons.findIndex(les => les.lessonId === jumpTarget.lessonId);
+        if (!resolvedInitialTarget) return 0;
+        const levelLessons = (curriculumData && curriculumData[resolvedInitialTarget.level]) || [];
+        const idx = levelLessons.findIndex(les => les.lessonId === resolvedInitialTarget.lessonId);
         return idx >= 0 ? idx : 0;
     }); 
     const [quizAnswers, setQuizAnswers] = useStateCurriculum({});
@@ -142,7 +156,7 @@ const CurriculumTab = ({ curriculumData, progress, bookmarks, lessonProgress = [
                                 <button
                                     key={les.lessonId}
                                     onClick={() => setSelectedIdx(index)}
-                                    className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center justify-between gap-2 mb-1 ${selectedIdx === index ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-900/40' : 'bg-slate-50/50 dark:bg-slate-950/20 border-transparent hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-300'}`}
+                                    className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center justify-between gap-2 mb-1 ${selectedIdx === index ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-900/40' : 'bg-slate-50/50 dark:bg-slate-950/20 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'}`}
                                 >
                                     <span className="truncate pr-2">{les.title}</span>
                                     {isDone ? (
@@ -315,7 +329,7 @@ const CurriculumTab = ({ curriculumData, progress, bookmarks, lessonProgress = [
                                 </p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                     {item.options.map((opt, oIdx) => {
-                                        let btnStyles = "bg-slate-50 dark:bg-slate-950 border-slate-150 dark:border-slate-850 hover:bg-slate-100 text-slate-700 dark:text-slate-300";
+                                        let btnStyles = "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-300";
                                         
                                         if (quizAnswers[qIdx] === opt) {
                                             btnStyles = "bg-teal-50 dark:bg-teal-950/40 border-teal-500 text-teal-700 dark:text-teal-400 font-bold";
@@ -365,12 +379,18 @@ const CurriculumTab = ({ curriculumData, progress, bookmarks, lessonProgress = [
                             <p className="text-[11px] text-emerald-700/80 dark:text-emerald-400/70">
                                 <i className="fas fa-circle-check mr-1"></i> Tiến độ bài học đã được ghi nhận.
                             </p>
+                            <button
+                                onClick={() => onSwitchTab && onSwitchTab('home')}
+                                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl shadow-md transition-all flex items-center justify-center gap-2"
+                            >
+                                <i className="fas fa-house"></i> Xong! Về Trang chủ
+                            </button>
                             {hasNextLesson && (
                                 <button
                                     onClick={goToNextLesson}
-                                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl shadow-md transition-all flex items-center justify-center gap-2"
+                                    className="w-full py-2.5 bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900/40 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-2xl transition-all flex items-center justify-center gap-2"
                                 >
-                                    Bài tiếp theo <i className="fas fa-arrow-right"></i>
+                                    Học thêm bài tiếp theo <i className="fas fa-arrow-right"></i>
                                 </button>
                             )}
                         </div>

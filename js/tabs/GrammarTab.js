@@ -1,8 +1,8 @@
 // File: js/tabs/GrammarTab.js
 
 const GrammarTab = ({ activeLevel }) => {
-    // Lấy useState và useEffect từ biến toàn cục React
-    const { useState, useEffect } = React;
+    // Lấy useState, useEffect, useMemo từ biến toàn cục React
+    const { useState, useEffect, useMemo } = React;
 
     // Cơ chế an toàn
     const isDbAvailable = typeof hskGrammarDatabase !== 'undefined';
@@ -28,6 +28,21 @@ const GrammarTab = ({ activeLevel }) => {
         const saved = localStorage.getItem('hsk_grammar_learned');
         return saved ? JSON.parse(saved) : [];
     });
+
+    // --- STATE CHO CẨM NANG BỘ THỦ (chuyển nguyên vẹn từ StatsTab — đây là tài
+    // liệu tham khảo/tra cứu, hợp nhóm với Ngữ pháp hơn là với Thống kê) ---
+    const [showRadicals, setShowRadicals] = useState(false);
+    const [selectedRadicalLevel, setSelectedRadicalLevel] = useState('all');
+    const [radicalSearchQuery, setRadicalSearchQuery] = useState("");
+
+    // --- CÁC STATE PHỤC VỤ PHÂN HỆ MINI-GAME GHÉP CẶP BỘ THỦ TƯƠNG TÁC ---
+    const [radicalActiveTab, setRadicalActiveTab] = useState('lookup'); // 'lookup' hoặc 'game'
+    const [gameLevel, setGameLevel] = useState('all'); // Cấp độ bộ thủ trong game
+    const [gameCards, setGameCards] = useState([]); // Danh sách các thẻ bài trong game
+    const [selectedCard, setSelectedCard] = useState(null); // Thẻ bài đang chọn hiện tại
+    const [wrongPair, setWrongPair] = useState([]); // Cặp thẻ bài ghép sai tạm thời hiển thị đỏ
+    const [matchedCount, setMatchedCount] = useState(0); // Số cặp đã ghép đúng thành công
+    const [gameStatus, setGameStatus] = useState('idle'); // 'idle', 'playing', 'won'
 
     // --- STATE CHO CHẾ ĐỘ MỤC LỤC THU GỌN (ACCORDION) ---
     const [expandedCards, setExpandedCards] = useState([]);
@@ -59,6 +74,144 @@ const GrammarTab = ({ activeLevel }) => {
             setExpandedCards([]); // Gập lại khi xóa tìm kiếm
         }
     }, [searchTerm]);
+
+    // --- CẨM NANG BỘ THỦ: dữ liệu & bộ lọc (chuyển nguyên vẹn từ StatsTab) ---
+    const coreRadicals = useMemo(() => {
+        const rawList = window.hskProData?.coreRadicals || [];
+        // Phân bổ thông minh các bộ thủ cốt lõi vào HSK 1-6 để phân mảnh tiện lợi
+        return rawList.map((item, idx) => {
+            let level = 1;
+            if (idx >= 100) level = 6;
+            else if (idx >= 80) level = 5;
+            else if (idx >= 60) level = 4;
+            else if (idx >= 41) level = 3;
+            else if (idx >= 21) level = 2;
+            return {
+                ...item,
+                level
+            };
+        });
+    }, []);
+
+    const filteredRadicals = useMemo(() => {
+        return coreRadicals.filter(item => {
+            if (selectedRadicalLevel !== 'all' && item.level !== Number(selectedRadicalLevel)) {
+                return false;
+            }
+            if (radicalSearchQuery.trim()) {
+                const query = radicalSearchQuery.toLowerCase().trim();
+                return (
+                    item.radical.toLowerCase().includes(query) ||
+                    item.name.toLowerCase().includes(query) ||
+                    item.meaning.toLowerCase().includes(query) ||
+                    item.examples.toLowerCase().includes(query) ||
+                    item.tip.toLowerCase().includes(query)
+                );
+            }
+            return true;
+        });
+    }, [coreRadicals, selectedRadicalLevel, radicalSearchQuery]);
+
+    // --- CẨM NANG BỘ THỦ: logic Mini-Game ghép cặp (chuyển nguyên vẹn từ StatsTab) ---
+    const startNewGame = (level = gameLevel) => {
+        // Lọc danh sách bộ thủ thuộc cấp độ trò chơi đang chọn
+        const pool = coreRadicals.filter(r => level === 'all' || r.level === Number(level));
+        if (pool.length < 4) {
+            setGameCards([]);
+            setGameStatus('idle');
+            return;
+        }
+
+        // Chọn ngẫu nhiên 4 bộ thủ từ danh sách lọc được
+        const shuffledPool = [...pool].sort(() => 0.5 - Math.random());
+        const selectedRadicals = shuffledPool.slice(0, 4);
+
+        // Tạo danh sách thẻ: 4 thẻ chữ bộ thủ và 4 thẻ ý nghĩa tiếng Việt tương ứng
+        const cards = [];
+        selectedRadicals.forEach((rad, index) => {
+            cards.push({
+                id: `rad_${index}`,
+                matchId: index,
+                type: 'symbol',
+                content: rad.radical.split(' ')[0], // Trích xuất ký tự gốc sạch
+                detail: `Bộ ${rad.name}`,
+                isMatched: false
+            });
+            cards.push({
+                id: `meaning_${index}`,
+                matchId: index,
+                type: 'meaning',
+                content: rad.meaning,
+                detail: `Bộ ${rad.name}`,
+                isMatched: false
+            });
+        });
+
+        // Xáo trộn ngẫu nhiên hoàn toàn thứ tự các thẻ bài
+        const randomizedCards = cards.sort(() => 0.5 - Math.random());
+
+        setGameCards(randomizedCards);
+        setSelectedCard(null);
+        setWrongPair([]);
+        setMatchedCount(0);
+        setGameStatus('playing');
+    };
+
+    const handleCardSelect = (card) => {
+        if (card.isMatched || gameStatus !== 'playing') return;
+        if (wrongPair.length > 0) return; // Đợi hiệu ứng đỏ nhấp nháy biến mất
+
+        // Nếu click lại đúng thẻ đã chọn -> Bỏ chọn
+        if (selectedCard && selectedCard.id === card.id) {
+            setSelectedCard(null);
+            return;
+        }
+
+        // Nếu chưa chọn thẻ nào -> Tiến hành chọn thẻ hiện tại
+        if (!selectedCard) {
+            setSelectedCard(card);
+            return;
+        }
+
+        // Nếu chọn 2 thẻ cùng loại (ví dụ 2 ký tự bộ thủ hoặc 2 nghĩa tiếng Việt) -> Đổi thẻ chọn mới
+        if (selectedCard.type === card.type) {
+            setSelectedCard(card);
+            return;
+        }
+
+        // ĐỐI CHIẾU: Tiến hành so khớp khi đã chọn một cặp Thẻ chữ và Thẻ nghĩa
+        if (selectedCard.matchId === card.matchId) {
+            // Đúng! Đánh dấu 2 thẻ bài đã được khớp thành công
+            setGameCards(prev => prev.map(c => {
+                if (c.matchId === card.matchId) return { ...c, isMatched: true };
+                return c;
+            }));
+            setMatchedCount(prev => {
+                const nextCount = prev + 1;
+                if (nextCount === 4) {
+                    setGameStatus('won');
+                }
+                return nextCount;
+            });
+            setSelectedCard(null);
+            // Kích hoạt âm thanh phản hồi Ting Ting chuẩn xác
+            if (typeof window.playSoundFeedback === 'function') {
+                window.playSoundFeedback('correct');
+            }
+        } else {
+            // Sai! Lưu trữ cặp thẻ ghép lỗi để phủ màu đỏ cảnh báo
+            setWrongPair([selectedCard.id, card.id]);
+            setSelectedCard(null);
+            if (typeof window.playSoundFeedback === 'function') {
+                window.playSoundFeedback('wrong');
+            }
+
+            // Tự động khôi phục lại trạng thái bình thường sau 800ms
+            setTimeout(() => {
+                setWrongPair([]);
+            }, 800);
+        }
+    };
 
     // --- HÀM XỬ LÝ ---
     const toggleBookmark = (id) => {
@@ -337,6 +490,270 @@ const GrammarTab = ({ activeLevel }) => {
                         <svg className={`w-3.5 h-3.5 transition-transform ${expandedCards.length === filteredGrammar.length ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                     </button>
                 </div>
+            </div>
+
+            {/* CẨM NANG BỘ THỦ CHỮ HÁN CỐT LÕI (Collapse kèm Tìm Kiếm & Game Ghép cặp) */}
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 transition-all duration-300">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                    <div>
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            <i className="fas fa-book-open text-indigo-600"></i> Cẩm nang Bộ thủ chữ Hán HSK
+                        </h4>
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                            Mẹo tư duy và liên tưởng hình ảnh để lưu giữ mặt chữ sâu sắc, dễ dàng tra cứu và luyện game phản xạ.
+                        </p>
+                    </div>
+
+                    <button 
+                        onClick={() => setShowRadicals(!showRadicals)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-xl shadow-md shadow-indigo-100 dark:shadow-none transition duration-150 self-start sm:self-center"
+                    >
+                        {showRadicals ? (
+                            <>
+                                <i className="fas fa-eye-slash"></i> Thu gọn bộ thủ
+                            </>
+                        ) : (
+                            <>
+                                <i className="fas fa-eye"></i> Xem cẩm nang ({coreRadicals.length} Bộ)
+                            </>
+                        )}
+                    </button>
+                </div>
+
+                {showRadicals && (
+                    <div className="space-y-4 animate-fade-in border-t border-slate-100 dark:border-slate-800/80 pt-4">
+                        
+                        <div className="flex items-center space-x-2 bg-slate-100 dark:bg-slate-950 p-1 rounded-2xl w-full sm:w-80">
+                            <button
+                                onClick={() => setRadicalActiveTab('lookup')}
+                                className={`flex-1 py-2 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 ${
+                                    radicalActiveTab === 'lookup'
+                                        ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+                                }`}
+                            >
+                                <i className="fas fa-search-plus"></i> Tra cứu bộ thủ
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setRadicalActiveTab('game');
+                                    if (gameStatus === 'idle') startNewGame('all');
+                                }}
+                                className={`flex-1 py-2 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 ${
+                                    radicalActiveTab === 'game'
+                                        ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+                                }`}
+                            >
+                                <i className="fas fa-gamepad"></i> Game ghép cặp
+                            </button>
+                        </div>
+
+                        {/* PHÂN HỆ 1: TRA CỨU BỘ THỦ */}
+                        {radicalActiveTab === 'lookup' && (
+                            <div className="space-y-4 animate-fade-in">
+                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/60">
+                                    {/* Bộ lọc cấp độ HSK từ 1 - 6 */}
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                        <span className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 mr-1">Bộ lọc HSK:</span>
+                                        {['all', 1, 2, 3, 4, 5, 6].map((level) => (
+                                            <button
+                                                key={level}
+                                                onClick={() => setSelectedRadicalLevel(level)}
+                                                className={`px-3 py-1.5 text-[11px] font-bold rounded-xl transition border ${
+                                                    selectedRadicalLevel === level
+                                                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm shadow-indigo-100'
+                                                        : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/80 text-slate-600 dark:text-slate-300 hover:border-indigo-500'
+                                                }`}
+                                            >
+                                                {level === 'all' ? 'Tất cả' : `HSK ${level}`}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Thanh tìm kiếm bộ thủ */}
+                                    <div className="relative w-full lg:w-72">
+                                        <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                        <input
+                                            type="text"
+                                            placeholder="Tìm kiếm: Nhân, Khẩu, ăn, uống, trà..."
+                                            value={radicalSearchQuery}
+                                            onChange={(e) => setRadicalSearchQuery(e.target.value)}
+                                            className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700 dark:text-slate-200"
+                                        />
+                                        {radicalSearchQuery && (
+                                            <button 
+                                                onClick={() => setRadicalSearchQuery("")}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                            >
+                                                <i className="fas fa-times"></i>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between items-center text-xs text-slate-400 dark:text-slate-500 px-1">
+                                    <span>Đang hiển thị <strong>{filteredRadicals.length}</strong> bộ thủ</span>
+                                    {selectedRadicalLevel !== 'all' && (
+                                        <span>Thuộc nhóm từ vựng của <strong>HSK {selectedRadicalLevel}</strong></span>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
+                                    {filteredRadicals.map((item, index) => (
+                                        <div 
+                                            key={index} 
+                                            className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 dark:border-slate-800/80 dark:bg-slate-950/20 hover:shadow-md hover:border-indigo-100 dark:hover:border-indigo-950 transition duration-300 flex flex-col justify-between space-y-2.5 relative group overflow-hidden"
+                                        >
+                                            <span className="absolute top-2 right-2 text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100/35 dark:border-indigo-900/35">
+                                                HSK {item.level}
+                                            </span>
+
+                                            <div>
+                                                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2 pr-12">
+                                                    <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">{item.radical}</span>
+                                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Bộ {item.name}</span>
+                                                </div>
+                                                
+                                                <div className="space-y-1 text-xs">
+                                                    <p className="text-slate-600 dark:text-slate-400">
+                                                        <strong>Ý nghĩa:</strong> {item.meaning}
+                                                    </p>
+                                                    <p className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                                                        <strong>Ví dụ:</strong> {item.examples}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-amber-500/10 text-amber-800 dark:text-amber-300 p-2.5 rounded-xl text-[11px] leading-relaxed italic border border-amber-500/10">
+                                                🎯 {item.tip}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {filteredRadicals.length === 0 && (
+                                        <div className="col-span-full text-center py-12 text-slate-400 text-xs">
+                                            <i className="fas fa-search text-2xl mb-2 block text-slate-300"></i>
+                                            Không tìm thấy bộ thủ phù hợp với từ khóa của bạn.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* PHÂN HỆ 2: GAME GHẾP CẶP BỘ THỦ */}
+                        {radicalActiveTab === 'game' && (
+                            <div className="bg-slate-50/50 dark:bg-slate-950/30 p-5 rounded-3xl border border-slate-100 dark:border-slate-800/80 space-y-5 animate-fade-in">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                    <div className="space-y-1">
+                                        <h5 className="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-widest">Trò chơi phản xạ Bộ thủ</h5>
+                                        <p className="text-[11px] text-slate-400 dark:text-slate-500">Hãy click ghép cặp đúng các ô chữ bộ thủ với phần giải nghĩa tiếng Việt tương ứng.</p>
+                                    </div>
+
+                                    {/* Lựa chọn cấp độ luyện tập bộ thủ trong Game */}
+                                    <div className="flex items-center space-x-2">
+                                        <select
+                                            value={gameLevel}
+                                            onChange={(e) => {
+                                                setGameLevel(e.target.value);
+                                                startNewGame(e.target.value);
+                                            }}
+                                            className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 text-slate-700 dark:text-slate-200"
+                                        >
+                                            <option value="all">Mức độ: Tất cả bộ thủ</option>
+                                            <option value="1">Mức độ HSK 1</option>
+                                            <option value="2">Mức độ HSK 2</option>
+                                            <option value="3">Mức độ HSK 3</option>
+                                            <option value="4">Mức độ HSK 4</option>
+                                            <option value="5">Mức độ HSK 5</option>
+                                            <option value="6">Mức độ HSK 6</option>
+                                        </select>
+
+                                        <button
+                                            onClick={() => startNewGame()}
+                                            className="p-2 text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-400 rounded-xl transition duration-150 active:scale-95"
+                                            title="Tải lại bảng ghép bài"
+                                        >
+                                            <i className="fas fa-redo"></i> Chơi lại
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {gameStatus === 'playing' && (
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto py-2">
+                                        {gameCards.map((card) => {
+                                            const isSelected = selectedCard?.id === card.id;
+                                            const isWrong = wrongPair.includes(card.id);
+                                            
+                                            return (
+                                                <button
+                                                    key={card.id}
+                                                    onClick={() => handleCardSelect(card)}
+                                                    disabled={card.isMatched}
+                                                    className={`h-24 rounded-2xl border-2 flex flex-col items-center justify-center p-3 transition-all duration-300 relative ${
+                                                        card.isMatched
+                                                            ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-500 scale-95 opacity-55 cursor-not-allowed'
+                                                            : isWrong
+                                                            ? 'bg-red-500/20 border-red-500 text-red-600 dark:text-red-400 shake-animation'
+                                                            : isSelected
+                                                            ? 'bg-indigo-500 border-indigo-500 text-white scale-105 shadow-md shadow-indigo-100 dark:shadow-none'
+                                                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-800 text-slate-800 dark:text-slate-200 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]'
+                                                    }`}
+                                                >
+                                                    {/* Nhãn loại thẻ bài nhỏ kín */}
+                                                    <span className={`absolute top-1.5 left-2.5 text-[8px] font-black uppercase opacity-65 ${
+                                                        isSelected ? 'text-white' : 'text-slate-400'
+                                                    }`}>
+                                                        {card.type === 'symbol' ? 'Bộ thủ' : 'Ý nghĩa'}
+                                                    </span>
+
+                                                    {card.isMatched ? (
+                                                        <div className="flex flex-col items-center justify-center text-center">
+                                                            <i className="fas fa-check-circle text-lg mb-1"></i>
+                                                            <span className="text-[10px] font-black uppercase tracking-wider">Đã khớp</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-center w-full">
+                                                            <span className={`font-black break-words block leading-snug ${
+                                                                card.type === 'symbol' ? 'text-3xl' : 'text-[11px] px-1'
+                                                            }`}>
+                                                                {card.content}
+                                                            </span>
+                                                            {card.type === 'symbol' && (
+                                                                <span className={`text-[10px] block font-medium mt-0.5 opacity-80 ${
+                                                                    isSelected ? 'text-white/80' : 'text-slate-400'
+                                                                }`}>
+                                                                    {card.detail}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
+                                {gameStatus === 'won' && (
+                                    <div className="text-center py-10 max-w-md mx-auto space-y-4 animate-scale-up">
+                                        <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-4xl mx-auto shadow-inner border border-emerald-200/50">
+                                            🎉
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h4 className="font-extrabold text-lg text-slate-800 dark:text-slate-100">Chiến thắng xuất sắc!</h4>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Bạn đã ghi nhớ và ghép nối chuẩn xác tất cả các bộ thủ.</p>
+                                        </div>
+                                        <button
+                                            onClick={() => startNewGame()}
+                                            className="px-6 py-2.5 text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-100 dark:shadow-none transition duration-150 active:scale-95"
+                                        >
+                                            Luyện ván mới <i className="fas fa-arrow-right ml-1"></i>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {filteredGrammar.length === 0 && (

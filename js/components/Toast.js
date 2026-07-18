@@ -22,9 +22,9 @@ const Toast = ({ message, type = 'info', onClose }) => {
     };
 
     return (
-        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border animate-fade-in ${styles[type]}`}>
+        <div className={`fixed bottom-24 left-4 right-4 md:left-auto md:right-6 md:bottom-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border animate-fade-in ${styles[type]}`}>
             <i className={`fas ${icons[type]} text-lg`}></i>
-            <p className="text-xs font-bold leading-tight">{message}</p>
+            <p className="text-xs font-bold leading-tight flex-1">{message}</p>
             <button onClick={onClose} className="opacity-75 hover:opacity-100 transition-opacity ml-2">
                 <i className="fas fa-times text-xs"></i>
             </button>

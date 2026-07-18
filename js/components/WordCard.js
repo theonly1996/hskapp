@@ -112,7 +112,7 @@ const WordCard = ({ word, isBookmarked, onToggleBookmark, onShowStroke, learning
                             </button>
                             <button 
                                 onClick={(e) => { e.stopPropagation(); onToggleBookmark(word); }}
-                                className={`w-7 h-7 rounded-full flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-850 dark:hover:bg-slate-850 ${isBookmarked ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600 hover:text-amber-500'}`}
+                                className={`w-7 h-7 rounded-full flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-800 ${isBookmarked ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600 hover:text-amber-500'}`}
                                 title={isBookmarked ? "Bỏ đánh dấu" : "Đánh dấu lưu"}
                             >
                                 <i className={`${isBookmarked ? 'fas' : 'far'} fa-star text-sm`}></i>
@@ -147,7 +147,7 @@ const WordCard = ({ word, isBookmarked, onToggleBookmark, onShowStroke, learning
                     )}
 
                     {(isSpeaking || speechStatus) && (
-                        <div className="mt-2 text-xs p-2 rounded-xl flex items-center gap-2 animate-fade-in border transition-all duration-300 bg-slate-50 dark:bg-slate-900/40 border-slate-150 dark:border-slate-800/80">
+                        <div className="mt-2 text-xs p-2 rounded-xl flex items-center gap-2 animate-fade-in border transition-all duration-300 bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/80">
                             {isSpeaking && (
                                 <div className="flex items-center gap-2">
                                     <span className="text-red-500 flex items-center gap-1.5 font-bold"><i className="fas fa-circle animate-pulse"></i> Hệ thống đang nghe...</span>

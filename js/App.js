@@ -370,6 +370,7 @@ const App = () => {
     const goToTab = (tabId) => {
         setActiveTab(tabId);
         if (tabId === 'flashcard') setFlashcardStartMode('all');
+        if (tabId === 'curriculum') setCurriculumJumpTarget(null);
         setShowMoreMenu(false);
     };
 
@@ -383,10 +384,12 @@ const App = () => {
 
     return (
         <>
-            <header className="bg-gradient-to-br from-teal-600 to-teal-800 dark:from-slate-900 dark:to-teal-950 text-white pt-8 pb-5 px-4 md:px-8 rounded-b-[32px] shadow-md mb-5 transition-colors relative overflow-hidden">
+            <header className="bg-gradient-to-br from-teal-600 to-teal-800 dark:from-slate-900 dark:to-teal-950 text-white pt-8 pb-5 px-4 md:px-8 rounded-b-[32px] shadow-md mb-5 transition-colors relative">
 
-                <div className="absolute top-0 right-0 opacity-10 pointer-events-none transform translate-x-12 -translate-y-6">
-                    <i className="fas fa-seedling text-[160px]"></i>
+                <div className="absolute inset-0 overflow-hidden rounded-b-[32px] pointer-events-none">
+                    <div className="absolute top-0 right-0 opacity-10 transform translate-x-12 -translate-y-6">
+                        <i className="fas fa-seedling text-[160px]"></i>
+                    </div>
                 </div>
 
                 <div className="flex justify-between items-center mb-5 relative z-10">
@@ -406,7 +409,7 @@ const App = () => {
                             <button
                                 onClick={() => setShowSettingsMenu(v => !v)}
                                 className="bg-white/10 w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/20 transition-all text-xs shrink-0"
-                                title="Cài đặt"
+                                title="Cài đặt & Sao lưu dữ liệu"
                             >
                                 <i className="fas fa-gear"></i>
                             </button>
@@ -431,6 +434,10 @@ const App = () => {
                                             <i className="fas fa-sliders-h w-4 text-teal-600 dark:text-teal-400"></i>
                                             Giọng đọc &amp; tốc độ
                                         </button>
+                                        <div className="h-px bg-slate-100 dark:bg-slate-800 my-1.5"></div>
+                                        <p className="px-3 pt-1 pb-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                                            Sao lưu &amp; khôi phục
+                                        </p>
                                         <button
                                             onClick={() => { exportData(); setShowSettingsMenu(false); }}
                                             className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold transition-colors"
@@ -582,6 +589,7 @@ const App = () => {
                             onShowStroke={setWritingWord}
                             onCompleteLesson={completeCurriculumLesson}
                             jumpTarget={curriculumJumpTarget}
+                            onSwitchTab={goToTab}
                         />
                     )}
                     {activeTab === 'dictionary' && (
@@ -610,6 +618,7 @@ const App = () => {
                             progress={progress}
                             onChangeStatus={changeStatus}
                             initialLessonId={flashcardStartMode}
+                            onSwitchTab={goToTab}
                         />
                     )}
                     {activeTab === 'quiz' && (

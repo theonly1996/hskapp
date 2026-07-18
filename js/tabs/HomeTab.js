@@ -5,8 +5,9 @@
 // một lần chạm để bắt đầu học — không phải suy nghĩ, không phải tìm menu.
 // Toàn bộ dữ liệu/tính toán dùng lại nguyên vẹn TodayPlanService (không đổi
 // logic học), chỉ khác về cách trình bày: gọn, tập trung vào 1 hành động
-// chính, các chi tiết còn lại (thống kê đầy đủ, bảng luyện dịch, bộ thủ...)
-// được chuyển sang StatsTab.js truy cập qua nút "Xem thống kê chi tiết".
+// chính, các chi tiết còn lại (thống kê đầy đủ, bảng luyện dịch ở tab
+// Thống kê; cẩm nang bộ thủ tra cứu ở tab Ngữ pháp) được chuyển sang các
+// tab tương ứng, truy cập qua nút "Xem thống kê chi tiết".
 // =========================================================================
 const { useMemo: useMemoHome } = React;
 
@@ -114,9 +115,11 @@ const HomeTab = ({
             <div className="flex items-center justify-between px-1">
                 <div>
                     <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{todayDateLabel}</p>
-                    <h2 className="text-xl font-extrabold text-slate-800 dark:text-white">Chào bạn 👋</h2>
+                    <h2 className="text-xl font-extrabold text-slate-800 dark:text-white">
+                        {todayTasksTotal > 0 ? 'Hôm nay học gì?' : 'Đã xong hết việc hôm nay! 🎉'}
+                    </h2>
                     <p className="text-xs font-bold text-teal-600 dark:text-teal-400 mt-0.5">
-                        {todayTasksTotal > 0 ? `Còn ${todayTasksTotal} việc cần làm hôm nay` : 'Đã xong hết việc hôm nay! 🎉'}
+                        {todayTasksTotal > 0 ? `Còn ${todayTasksTotal} việc — bấm bên dưới để bắt đầu` : 'Học thêm hoặc nghỉ ngơi đều tốt cả'}
                     </p>
                 </div>
                 <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 px-3 py-1.5 rounded-full text-xs font-bold border border-orange-100 dark:border-orange-900/40 shrink-0">
@@ -148,57 +151,37 @@ const HomeTab = ({
                 </div>
             )}
 
-            {/* 3 KHỐI CHI TIẾT: bài tiếp theo / từ cần ôn / từ mới — minh bạch để người dùng tự chọn nếu muốn */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 flex flex-col justify-between gap-2 min-h-[104px]">
-                    <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400">
-                        <i className="fas fa-graduation-cap text-xs"></i>
-                        <span className="text-[10px] font-black uppercase tracking-wider">Bài học tiếp theo</span>
+            {/* KẾ HOẠCH HÔM NAY — chỉ để ĐỌC, không phải 3 nút bấm cạnh tranh với
+                nút hành động chính ở trên. Người dùng không cần tự quyết định
+                "bấm cái nào trước" — hệ thống đã quyết định đó là primaryAction.
+                Các dòng còn lại chỉ cho biết "sau đó còn gì", mờ đi khi đã xong. */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden">
+                <div className={`flex items-center gap-3 px-4 py-3 ${!todayPlan.nextLesson ? 'opacity-40' : ''}`}>
+                    <i className={`fas ${todayPlan.nextLesson ? 'fa-circle text-teal-500' : 'fa-circle-check text-emerald-500'} text-[10px] shrink-0`}></i>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">
+                            {todayPlan.nextLesson ? todayPlan.nextLesson.title : 'Bài học: đã xong giáo trình 🎉'}
+                        </p>
                     </div>
-                    {todayPlan.nextLesson ? (
-                        <button onClick={handleGoToTodayLesson} className="text-left group">
-                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{todayPlan.nextLesson.title}</p>
-                            <p className="text-[11px] font-bold text-teal-600 dark:text-teal-400 group-hover:underline mt-0.5">
-                                {todayPlan.nextLesson.vocabRemaining}/{todayPlan.nextLesson.vocabTotal} từ mới <i className="fas fa-chevron-right text-[9px] ml-0.5"></i>
-                            </p>
-                        </button>
-                    ) : (
-                        <p className="text-xs text-slate-400 dark:text-slate-500">Đã hoàn thành hết giáo trình 🎉</p>
-                    )}
+                    {todayPlan.nextLesson && <span className="text-[10px] font-bold text-slate-400 shrink-0">{todayPlan.nextLesson.vocabRemaining}/{todayPlan.nextLesson.vocabTotal} từ</span>}
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 flex flex-col justify-between gap-2 min-h-[104px]">
-                    <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
-                        <i className="fas fa-rotate text-xs"></i>
-                        <span className="text-[10px] font-black uppercase tracking-wider">Từ cần ôn</span>
+                <div className={`flex items-center gap-3 px-4 py-3 ${todayPlan.reviewWords.total === 0 ? 'opacity-40' : ''}`}>
+                    <i className={`fas ${todayPlan.reviewWords.total > 0 ? 'fa-circle text-indigo-500' : 'fa-circle-check text-emerald-500'} text-[10px] shrink-0`}></i>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">
+                            {todayPlan.reviewWords.total > 0 ? `Ôn tập: ${todayPlan.reviewWords.total} từ (HSK ${activeLevel})` : 'Ôn tập: chưa có từ nào cần ôn'}
+                        </p>
                     </div>
-                    {todayPlan.reviewWords.total > 0 ? (
-                        <button onClick={handleStartReview} className="text-left group">
-                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{todayPlan.reviewWords.total} từ (HSK {activeLevel})</p>
-                            <p className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 group-hover:underline mt-0.5">
-                                Ôn tập ngay <i className="fas fa-chevron-right text-[9px] ml-0.5"></i>
-                            </p>
-                        </button>
-                    ) : (
-                        <p className="text-xs text-slate-400 dark:text-slate-500">Chưa có từ nào cần ôn</p>
-                    )}
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 flex flex-col justify-between gap-2 min-h-[104px]">
-                    <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-                        <i className="fas fa-star text-xs"></i>
-                        <span className="text-[10px] font-black uppercase tracking-wider">Từ vựng mới</span>
+                <div className={`flex items-center gap-3 px-4 py-3 ${todayPlan.newWords.total === 0 ? 'opacity-40' : ''}`}>
+                    <i className={`fas ${todayPlan.newWords.total > 0 ? 'fa-circle text-amber-500' : 'fa-circle-check text-emerald-500'} text-[10px] shrink-0`}></i>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">
+                            {todayPlan.newWords.total > 0 ? `Từ mới: gợi ý ${todayPlan.newWords.suggestedCount} từ (HSK ${activeLevel})` : `Từ mới: đã học hết HSK ${activeLevel}`}
+                        </p>
                     </div>
-                    {todayPlan.newWords.total > 0 ? (
-                        <button onClick={handleStartNewWords} className="text-left group">
-                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{todayPlan.newWords.suggestedCount} từ gợi ý (HSK {activeLevel})</p>
-                            <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 group-hover:underline mt-0.5">
-                                Học ngay <i className="fas fa-chevron-right text-[9px] ml-0.5"></i>
-                            </p>
-                        </button>
-                    ) : (
-                        <p className="text-xs text-slate-400 dark:text-slate-500">Đã học hết từ vựng HSK {activeLevel}</p>
-                    )}
                 </div>
             </div>
 

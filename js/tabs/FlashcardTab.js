@@ -3,7 +3,7 @@
 // =========================================================================
 const { useState: useStateFlashcard, useEffect: useEffectFlashcard, useMemo: useMemoFlashcard, useCallback: useCallbackFlashcard } = React;
 
-const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStroke, progress, onChangeStatus, initialLessonId }) => {
+const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStroke, progress, onChangeStatus, initialLessonId, onSwitchTab }) => {
     // Chế độ xem: 'flashcard' (Học thẻ) | 'manager' (Quản lý bài học) | 'create_lesson' (Tạo bài mới)
     const [viewMode, setViewMode] = useStateFlashcard('flashcard');
     
@@ -759,6 +759,12 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
                             </div>
                             
                             <div className="pt-2 flex flex-col gap-2">
+                                <button
+                                    onClick={() => onSwitchTab && onSwitchTab('home')}
+                                    className="w-full py-2.5 bg-teal-600 text-white font-extrabold text-xs rounded-xl hover:bg-teal-700 transition-colors"
+                                >
+                                    <i className="fas fa-house"></i> Xong! Về Trang chủ
+                                </button>
                                 <button 
                                     onClick={(e) => {
                                         if (activeLessonId === 'all') {
@@ -772,15 +778,15 @@ const FlashcardTab = ({ words, loading, bookmarks, onToggleBookmark, onShowStrok
                                             if (currentLesson) handleResetLessonProgress(e, currentLesson.wordIds);
                                         }
                                     }}
-                                    className="w-full py-2.5 bg-teal-600 text-white font-extrabold text-xs rounded-xl hover:bg-teal-700 transition-colors"
+                                    className="w-full py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-extrabold text-xs rounded-xl hover:bg-slate-200"
                                 >
                                     <i className="fas fa-redo-alt"></i> Học lại bài này từ đầu
                                 </button>
                                 <button 
                                     onClick={() => setViewMode('manager')}
-                                    className="w-full py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-extrabold text-xs rounded-xl hover:bg-slate-200"
+                                    className="w-full py-2 text-slate-400 dark:text-slate-500 font-bold text-[11px] hover:text-slate-600 dark:hover:text-slate-300"
                                 >
-                                    <i className="fas fa-book-open"></i> Học bài khác
+                                    Học bài khác
                                 </button>
                             </div>
                         </div>
