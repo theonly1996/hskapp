@@ -252,15 +252,35 @@ const App = () => {
         setLessonProgress(updated);
     };
 
-    // Danh sách từ vựng đầy đủ theo từng cấp độ (dùng cho thống kê tổng —
-    // Home/Stats — vốn cần dữ liệu của TẤT CẢ cấp độ cùng lúc, khác với
-    // "words" bên dưới chỉ chứa dữ liệu của cấp độ đang active).
+    // Công thức quy đổi lessonId nội bộ (1-15/cấp) <-> lessonId toàn cục
+    // (1-45) — GIỐNG HỆT công thức trong TodayPlanService, phải khớp tuyệt
+    // đối để "Bài học tiếp theo" ở Home tính đúng.
+    const LESSONS_PER_LEVEL = 15;
+
+    // Được gọi khi người dùng nộp bài mini-quiz cuối bài trong CurriculumTab
+    // (tab "Học bài" — nơi thực sự đọc hội thoại + học từ vựng + ngữ pháp).
+    // Trước đây hành động này KHÔNG cập nhật lessonProgress, khiến Home
+    // không bao giờ tự chuyển sang bài tiếp theo dù người dùng đã học xong.
+    const completeCurriculumLesson = (level, localLessonId, score, maxScore) => {
+        const globalLessonId = localLessonId + LESSONS_PER_LEVEL * (level - 1);
+        const existing = lessonProgress.find(l => l.lessonId === globalLessonId);
+        const title = (existing && existing.title) || `Bài ${globalLessonId}`;
+        const wasAlreadyDone = !!(existing && existing.isCompleted);
+        const updated = window.ProgressService.recordLessonScore(globalLessonId, score, { level, title });
+        setLessonProgress(updated);
+        if (!wasAlreadyDone) {
+            showToast("Đã hoàn thành bài học! Tiến độ hôm nay đã cập nhật 🎉", "success");
+        }
+    };
+
+    // Từ vựng đầy đủ theo TỪNG cấp độ cùng lúc — cần cho thống kê tổng
+    // (Home/Stats) vốn phải cộng dồn cả 6 cấp, khác với "words" bên dưới
+    // chỉ chứa từ vựng của cấp đang active.
     const [wordsByLevel, setWordsByLevel] = useStateApp(() => ({ ...FALLBACK_VOCABULARY }));
     const [levelsPreloaded, setLevelsPreloaded] = useStateApp(false);
 
-    // Tải toàn bộ dữ liệu từ vựng HSK 1-4 một lần duy nhất khi mở app.
-    // Tải tuần tự (không song song) vì fetchHSKData dùng chung 1 thẻ
-    // <script> — tải song song sẽ làm các yêu cầu tải đè lên nhau.
+    // Tải toàn bộ dữ liệu HSK 1-4 một lần duy nhất khi mở app (tuần tự,
+    // không song song, vì fetchHSKData dùng chung 1 thẻ <script>).
     useEffectApp(() => {
         let cancelled = false;
         const preloadAllLevels = async () => {
@@ -282,8 +302,7 @@ const App = () => {
         return () => { cancelled = true; };
     }, []);
 
-    // Sau khi đã tải xong toàn bộ cấp độ, đổi cấp độ chỉ cần lấy lại từ
-    // cache có sẵn (wordsByLevel) — không cần tải lại qua network/script.
+    // Sau khi đã preload xong, đổi cấp độ chỉ cần lấy từ cache có sẵn.
     useEffectApp(() => {
         if (!levelsPreloaded) return;
         setWords(wordsByLevel[activeLevel] || []);
@@ -337,7 +356,7 @@ const App = () => {
     ];
 
     const secondaryTabs = [
-        { id: 'quiz', name: 'Trắc nghiệm', icon: 'fa-gamepad' },
+        { id: 'quiz', name: 'Luyện tập', icon: 'fa-gamepad' },
         { id: 'grammar', name: 'Ngữ pháp', icon: 'fa-layer-group' },
         { id: 'bookmarks', name: 'Ưu tiên', icon: 'fa-star' },
         { id: 'stats', name: 'Thống kê', icon: 'fa-chart-pie' }
@@ -432,19 +451,26 @@ const App = () => {
                 </div>
 
                 <div className="flex gap-2 overflow-x-auto hide-scrollbar relative z-10">
-                    {[1, 2, 3, 4, 5, 6].map(level => (
-                        <button
-                            key={level}
-                            onClick={() => setActiveLevel(level)}
-                            className={`px-4 py-2 rounded-2xl font-bold whitespace-nowrap transition-all text-xs ${
-                                activeLevel === level 
-                                ? 'bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-400 shadow-md scale-105' 
-                                : 'bg-teal-700/50 dark:bg-slate-800/40 text-teal-100 dark:text-slate-400 hover:bg-teal-700/80 border border-teal-500/30 dark:border-slate-800/60'
-                            }`}
-                        >
-                            HSK {level}
-                        </button>
-                    ))}
+                    {[1, 2, 3, 4, 5, 6].map(level => {
+                        const hasData = level <= 4;
+                        return (
+                            <button
+                                key={level}
+                                onClick={() => hasData && setActiveLevel(level)}
+                                disabled={!hasData}
+                                title={hasData ? undefined : "Đang cập nhật dữ liệu, chưa thể học cấp độ này"}
+                                className={`px-4 py-2 rounded-2xl font-bold whitespace-nowrap transition-all text-xs ${
+                                    !hasData
+                                    ? 'bg-teal-800/30 dark:bg-slate-800/20 text-teal-300/50 dark:text-slate-600 cursor-not-allowed'
+                                    : activeLevel === level 
+                                    ? 'bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-400 shadow-md scale-105' 
+                                    : 'bg-teal-700/50 dark:bg-slate-800/40 text-teal-100 dark:text-slate-400 hover:bg-teal-700/80 border border-teal-500/30 dark:border-slate-800/60'
+                                }`}
+                            >
+                                HSK {level}{!hasData && <i className="fas fa-lock ml-1.5 text-[9px]"></i>}
+                            </button>
+                        );
+                    })}
                 </div>
             </header>
 
@@ -550,9 +576,11 @@ const App = () => {
                             curriculumData={curriculumData}
                             progress={progress}
                             bookmarks={bookmarks}
+                            lessonProgress={lessonProgress}
                             onToggleBookmark={toggleBookmark}
                             onChangeStatus={changeStatus}
                             onShowStroke={setWritingWord}
+                            onCompleteLesson={completeCurriculumLesson}
                             jumpTarget={curriculumJumpTarget}
                         />
                     )}

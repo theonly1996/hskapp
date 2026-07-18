@@ -3,7 +3,7 @@
 // =========================================================================
 const { useState: useStateCurriculum, useMemo: useMemoCurriculum, useEffect: useEffectCurriculum } = React;
 
-const CurriculumTab = ({ curriculumData, progress, bookmarks, onToggleBookmark, onChangeStatus, onShowStroke, jumpTarget }) => {
+const CurriculumTab = ({ curriculumData, progress, bookmarks, lessonProgress = [], onToggleBookmark, onChangeStatus, onShowStroke, onCompleteLesson, jumpTarget }) => {
     // Nếu App.js truyền jumpTarget (ví dụ từ thẻ "Hôm nay học gì" ở Tổng quan),
     // mở đúng cấp độ + bài học đó ngay khi mount. Không có jumpTarget thì giữ
     // nguyên hành vi mặc định cũ: Cấp độ 1, bài đầu tiên.
@@ -26,6 +26,16 @@ const CurriculumTab = ({ curriculumData, progress, bookmarks, onToggleBookmark, 
     const currentLesson = useMemoCurriculum(() => {
         return activeLessons[selectedIdx] || activeLessons[0] || { title: "Không có bài học", desc: "Không có dữ liệu bài học nào.", dialogue: [], vocab: [], grammar: "", quiz: [] };
     }, [activeLessons, selectedIdx]);
+
+    // Quy đổi lessonId nội bộ (theo cấp) -> lessonId toàn cục (1-45), giống
+    // hệt công thức trong App.js/TodayPlanService — để tra đúng trạng thái
+    // hoàn thành của bài đang xem trong Lesson Progress.
+    const LESSONS_PER_LEVEL = 15;
+    const globalLessonId = (currentLesson.lessonId || 0) + LESSONS_PER_LEVEL * (curLevel - 1);
+    const completedLessonIds = useMemoCurriculum(() => {
+        return new Set(lessonProgress.filter(l => l.isCompleted).map(l => l.lessonId));
+    }, [lessonProgress]);
+    const isCurrentLessonDone = completedLessonIds.has(globalLessonId);
 
     useEffectCurriculum(() => {
         setQuizAnswers({});
@@ -72,7 +82,25 @@ const CurriculumTab = ({ curriculumData, progress, bookmarks, onToggleBookmark, 
         } else {
             playSoundFeedback('wrong');
         }
+
+        // Ghi nhận bài học đã hoàn thành ngay khi nộp bài — không cần người
+        // dùng phải tự tick hay làm thêm 1 bài luyện dịch riêng để tiến độ
+        // ở Home mới nhảy sang bài kế tiếp.
+        if (typeof onCompleteLesson === 'function' && currentLesson.lessonId) {
+            onCompleteLesson(curLevel, currentLesson.lessonId, tempScore, currentLesson.quiz.length);
+        }
     };
+
+    const goToNextLesson = () => {
+        if (selectedIdx + 1 < activeLessons.length) {
+            setSelectedIdx(selectedIdx + 1);
+        } else if (curLevel < 3) {
+            setCurLevel(curLevel + 1);
+            setSelectedIdx(0);
+        }
+    };
+
+    const hasNextLesson = selectedIdx + 1 < activeLessons.length || curLevel < 3;
 
     if (!activeLessons || activeLessons.length === 0) {
         return (
@@ -107,21 +135,36 @@ const CurriculumTab = ({ curriculumData, progress, bookmarks, onToggleBookmark, 
 
                     <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-2">Danh sách bài học</span>
                     <div className="space-y-1.5 max-h-[350px] overflow-y-auto pr-1 flex flex-col">
-                        {activeLessons.map((les, index) => (
-                            <button
-                                key={les.lessonId}
-                                onClick={() => setSelectedIdx(index)}
-                                className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center justify-between mb-1 ${selectedIdx === index ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-900/40' : 'bg-slate-50/50 dark:bg-slate-950/20 border-transparent hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-300'}`}
-                            >
-                                <span className="truncate pr-2">{les.title}</span>
-                                <i className="fas fa-chevron-right text-[10px] opacity-60"></i>
-                            </button>
-                        ))}
+                        {activeLessons.map((les, index) => {
+                            const lesGlobalId = les.lessonId + LESSONS_PER_LEVEL * (curLevel - 1);
+                            const isDone = completedLessonIds.has(lesGlobalId);
+                            return (
+                                <button
+                                    key={les.lessonId}
+                                    onClick={() => setSelectedIdx(index)}
+                                    className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center justify-between gap-2 mb-1 ${selectedIdx === index ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-900/40' : 'bg-slate-50/50 dark:bg-slate-950/20 border-transparent hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-300'}`}
+                                >
+                                    <span className="truncate pr-2">{les.title}</span>
+                                    {isDone ? (
+                                        <i className="fas fa-circle-check text-emerald-500 text-xs shrink-0"></i>
+                                    ) : (
+                                        <i className="fas fa-chevron-right text-[10px] opacity-60 shrink-0"></i>
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
                 <div className="bg-gradient-to-br from-indigo-500/5 to-purple-500/5 p-5 rounded-3xl border border-indigo-200/20 dark:border-indigo-900/20 shadow-sm">
-                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block mb-1">Mục tiêu bài học</span>
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Mục tiêu bài học</span>
+                        {isCurrentLessonDone && (
+                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                <i className="fas fa-circle-check"></i> Đã học
+                            </span>
+                        )}
+                    </div>
                     <h5 className="font-extrabold text-sm text-slate-800 dark:text-white mb-2">{currentLesson.title}</h5>
                     <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">{currentLesson.desc}</p>
                 </div>
@@ -315,10 +358,21 @@ const CurriculumTab = ({ curriculumData, progress, bookmarks, onToggleBookmark, 
                             <i className="fas fa-paper-plane"></i> Gửi bài nộp chấm điểm
                         </button>
                     ) : (
-                        <div className="mt-4 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/20 text-center animate-fade-in">
+                        <div className="mt-4 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/20 text-center animate-fade-in space-y-3">
                             <p className="text-xs font-bold text-emerald-800 dark:text-emerald-400">
                                 Đã hoàn thành! Kết quả của bạn: <span className="text-base font-extrabold">{quizScore} / {currentLesson.quiz.length}</span> câu trả lời đúng.
                             </p>
+                            <p className="text-[11px] text-emerald-700/80 dark:text-emerald-400/70">
+                                <i className="fas fa-circle-check mr-1"></i> Tiến độ bài học đã được ghi nhận.
+                            </p>
+                            {hasNextLesson && (
+                                <button
+                                    onClick={goToNextLesson}
+                                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl shadow-md transition-all flex items-center justify-center gap-2"
+                                >
+                                    Bài tiếp theo <i className="fas fa-arrow-right"></i>
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>

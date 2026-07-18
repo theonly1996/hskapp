@@ -40,9 +40,6 @@
     BOOKMARKS: "hsk_bookmarks",
     STUDY_STREAK: "hsk_study_streak",
     LAST_ACTIVE_DATE: "hsk_last_active_date",
-    // Các key này được đọc/ghi trực tiếp bởi GrammarTab.js/FlashcardTab.js
-    // (ngoài phạm vi ProgressStore ban đầu), nhưng vẫn là dữ liệu người
-    // dùng cần được sao lưu/khôi phục đầy đủ — xem mục 5 (BACKUP) bên dưới.
     GRAMMAR_BOOKMARKS: "hsk_grammar_bookmarks",
     GRAMMAR_LEARNED: "hsk_grammar_learned",
     FLASHCARD_CUSTOM_LESSONS: "flashcard_custom_lessons",
@@ -443,14 +440,8 @@
   // =======================================================================
 
   /**
-   * Lấy toàn bộ dữ liệu backup hiện tại.
-   * Bao gồm ĐẦY ĐỦ mọi dữ liệu người dùng đang có trong LocalStorage, không
-   * chỉ Bookmark + Vocabulary Progress (bản cũ bỏ sót lessonProgress, streak,
-   * grammar bookmarks/learned và custom flashcard lessons/words — khiến
-   * người dùng mất tiến độ khi chuyển máy/khôi phục backup).
-   * @returns {object} { bookmarks, progress, lessonProgress, streak,
-   *   lastActiveDate, grammarBookmarks, grammarLearned,
-   *   flashcardCustomLessons, flashcardCustomWords }
+   * Lấy toàn bộ dữ liệu backup hiện tại (Bookmark + Vocabulary Progress).
+   * @returns {object} { bookmarks: Array, progress: object }
    */
   function exportBackup() {
     var activity = getStudyActivity();
@@ -469,9 +460,8 @@
 
   /**
    * Nạp dữ liệu backup vào LocalStorage.
-   * Chỉ ghi đè các phần có mặt trong `data` (giữ đúng hành vi cũ:
-   * `if (parsed.xxx) ...`) — tương thích ngược với backup cũ (chỉ có
-   * bookmarks/progress) vì các field mới đơn giản bị bỏ qua nếu không có.
+   * Chỉ ghi đè các phần có mặt trong `data` — tương thích ngược với backup
+   * cũ (chỉ có bookmarks/progress).
    * @param {object} data { bookmarks?, progress?, lessonProgress?, streak?,
    *   lastActiveDate?, grammarBookmarks?, grammarLearned?,
    *   flashcardCustomLessons?, flashcardCustomWords? }

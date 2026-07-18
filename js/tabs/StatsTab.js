@@ -30,7 +30,6 @@ const StatsTab = ({ progress = {}, bookmarks = [], wordsByLevel = null, onSwitch
 
     const levelStats = useMemoOverview(() => {
         const vocabSource = wordsByLevel || (typeof window !== 'undefined' && window.FALLBACK_VOCABULARY) || {};
-
         return window.ProgressService.getVocabularyStatisticsByLevel(vocabSource, allLevels);
     }, [progress, wordsByLevel]);
 

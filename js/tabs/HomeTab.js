@@ -41,6 +41,17 @@ const HomeTab = ({
         return window.ProgressService.getVocabularyStatisticsByLevel(vocabSource, [1, 2, 3, 4, 5, 6]);
     }, [progress, wordsByLevel]);
 
+    // "Còn bao nhiêu việc hôm nay" — đếm số đầu việc (bài học / ôn tập / từ
+    // mới) người dùng còn CHƯA làm, để trả lời thẳng câu hỏi "còn bao nhiêu
+    // việc" ngay trên Home mà không cần tự suy luận từ 3 ô chi tiết bên dưới.
+    const todayTasksTotal = useMemoHome(() => {
+        let total = 0;
+        if (todayPlan.nextLesson) total++;
+        if (todayPlan.reviewWords.total > 0) total++;
+        if (todayPlan.newWords.total > 0) total++;
+        return total;
+    }, [todayPlan]);
+
     const todayDateLabel = useMemoHome(() => {
         const days = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
         const now = new Date();
@@ -104,6 +115,9 @@ const HomeTab = ({
                 <div>
                     <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{todayDateLabel}</p>
                     <h2 className="text-xl font-extrabold text-slate-800 dark:text-white">Chào bạn 👋</h2>
+                    <p className="text-xs font-bold text-teal-600 dark:text-teal-400 mt-0.5">
+                        {todayTasksTotal > 0 ? `Còn ${todayTasksTotal} việc cần làm hôm nay` : 'Đã xong hết việc hôm nay! 🎉'}
+                    </p>
                 </div>
                 <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 px-3 py-1.5 rounded-full text-xs font-bold border border-orange-100 dark:border-orange-900/40 shrink-0">
                     <span>🔥</span><span>{streak} ngày</span>
