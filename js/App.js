@@ -392,7 +392,7 @@ const App = () => {
                     </div>
                 </div>
 
-                <div className="flex justify-between items-center mb-5 relative z-10">
+                <div className="flex justify-between items-center mb-5 relative z-20">
                     <h1 className="text-lg md:text-xl font-extrabold flex items-center gap-2">
                         <i className="fas fa-yin-yang text-teal-200"></i> Sổ Tay Học HSK
                     </h1>
